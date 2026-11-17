@@ -1,0 +1,230 @@
+{
+  "_nota": "Dosis y precios REFERENCIALES en soles (S/). Verificar siempre la etiqueta del producto registrado en SENASA y consultar a un ingeniero agrónomo. Edite los precios según su zona.",
+  "moneda": "PEN",
+  "cultivos": {
+    "papa": {
+      "nombre": "Papa (Solanum tuberosum)",
+      "enfermedades": {
+        "tizon_temprano": {
+          "nombre": "Tizón temprano (Alternaria)",
+          "agente": "Alternaria solani (hongo)",
+          "sintomas": "Manchas marrones oscuras con anillos concéntricos (forma de 'diana') en hojas viejas, rodeadas de un halo amarillo. Avanza de abajo hacia arriba.",
+          "condiciones": "Alternancia de clima cálido (24-29 °C) y húmedo con periodos secos. Plantas estresadas o con poco nitrógeno.",
+          "manejo_cultural": [
+            "Eliminar y destruir hojas y restos de plantas infectadas.",
+            "Rotar cultivos (no sembrar papa, tomate ni pimiento en el mismo lote por 2-3 años).",
+            "Fertilización balanceada, especialmente nitrógeno y potasio.",
+            "Evitar riego por aspersión al atardecer; regar temprano en la mañana.",
+            "Usar semilla certificada y variedades tolerantes."
+          ],
+          "productos": [
+            "mancozeb",
+            "clorotalonil",
+            "azoxistrobina",
+            "difenoconazol",
+            "oxicloruro_cobre"
+          ]
+        },
+        "tizon_tardio": {
+          "nombre": "Tizón tardío / Rancha (Phytophthora)",
+          "agente": "Phytophthora infestans (oomiceto)",
+          "sintomas": "Manchas irregulares verde oscuro a negras, de aspecto aceitoso, que crecen rápido. En el envés de la hoja aparece un moho blanquecino con humedad. Puede destruir el cultivo en pocos días.",
+          "condiciones": "Clima fresco (10-20 °C) y humedad relativa alta (>90 %), lluvias, neblinas o rocío prolongado.",
+          "manejo_cultural": [
+            "Actuar de inmediato: es la enfermedad más destructiva de la papa.",
+            "Eliminar plantas muy afectadas y no dejar montones de papa descartada (fuente de inóculo).",
+            "Aporcar bien para proteger los tubérculos.",
+            "Mejorar el drenaje y la ventilación del cultivo.",
+            "Alternar fungicidas de distinto modo de acción para evitar resistencia."
+          ],
+          "productos": [
+            "cimoxanil_mancozeb",
+            "metalaxil_mancozeb",
+            "dimetomorf",
+            "propamocarb",
+            "mancozeb",
+            "oxicloruro_cobre"
+          ]
+        },
+        "sana": {
+          "nombre": "Planta sana",
+          "agente": "—",
+          "sintomas": "No se detectaron síntomas de tizón temprano ni tardío.",
+          "condiciones": "—",
+          "manejo_cultural": [
+            "Continuar con el monitoreo semanal del cultivo.",
+            "En épocas de lluvia y frío, considerar aplicaciones preventivas con un protectante (ej. mancozeb).",
+            "Mantener una fertilización balanceada y buen drenaje."
+          ],
+          "productos": [
+            "mancozeb"
+          ]
+        }
+      }
+    }
+  },
+  "productos": {
+    "mancozeb": {
+      "nombre": "Mancozeb 80 % WP",
+      "ingrediente": "Mancozeb",
+      "tipo": "Fungicida protectante (de contacto)",
+      "formulacion": "polvo",
+      "unidad": "kg",
+      "dosis_min_ha": 2.0,
+      "dosis_max_ha": 2.5,
+      "agua_l_ha": 400,
+      "intervalo_dias": 7,
+      "aplicaciones_max_ciclo": 6,
+      "carencia_dias": 7,
+      "reingreso_horas": 24,
+      "presentacion": 1,
+      "precio_presentacion": 32,
+      "frac": "M03",
+      "modo_aplicacion": "Aspersión foliar preventiva cubriendo bien haz y envés. Aplicar antes de lluvias; no es curativo."
+    },
+    "clorotalonil": {
+      "nombre": "Clorotalonil 72 % SC",
+      "ingrediente": "Clorotalonil",
+      "tipo": "Fungicida protectante (de contacto)",
+      "formulacion": "liquido",
+      "unidad": "L",
+      "dosis_min_ha": 1.5,
+      "dosis_max_ha": 2.0,
+      "agua_l_ha": 400,
+      "intervalo_dias": 7,
+      "aplicaciones_max_ciclo": 6,
+      "carencia_dias": 7,
+      "reingreso_horas": 48,
+      "presentacion": 1,
+      "precio_presentacion": 50,
+      "frac": "M05",
+      "modo_aplicacion": "Aspersión foliar uniforme. Aplicar de forma preventiva o al aparecer los primeros síntomas."
+    },
+    "azoxistrobina": {
+      "nombre": "Azoxistrobina 25 % SC",
+      "ingrediente": "Azoxistrobina",
+      "tipo": "Fungicida sistémico (estrobilurina)",
+      "formulacion": "liquido",
+      "unidad": "L",
+      "dosis_min_ha": 0.3,
+      "dosis_max_ha": 0.5,
+      "agua_l_ha": 300,
+      "intervalo_dias": 10,
+      "aplicaciones_max_ciclo": 2,
+      "carencia_dias": 7,
+      "reingreso_horas": 12,
+      "presentacion": 0.25,
+      "precio_presentacion": 65,
+      "frac": "11",
+      "modo_aplicacion": "Aspersión foliar. Máximo 2 aplicaciones por ciclo y alternar con otro grupo FRAC para evitar resistencia."
+    },
+    "difenoconazol": {
+      "nombre": "Difenoconazol 25 % EC",
+      "ingrediente": "Difenoconazol",
+      "tipo": "Fungicida sistémico (triazol)",
+      "formulacion": "liquido",
+      "unidad": "L",
+      "dosis_min_ha": 0.3,
+      "dosis_max_ha": 0.5,
+      "agua_l_ha": 300,
+      "intervalo_dias": 14,
+      "aplicaciones_max_ciclo": 3,
+      "carencia_dias": 14,
+      "reingreso_horas": 24,
+      "presentacion": 0.25,
+      "precio_presentacion": 45,
+      "frac": "3",
+      "modo_aplicacion": "Aspersión foliar curativa al inicio de síntomas. Alternar con protectantes."
+    },
+    "oxicloruro_cobre": {
+      "nombre": "Oxicloruro de cobre 50 % WP",
+      "ingrediente": "Oxicloruro de cobre",
+      "tipo": "Fungicida/bactericida protectante (apto en manejo orgánico según certificadora)",
+      "formulacion": "polvo",
+      "unidad": "kg",
+      "dosis_min_ha": 2.0,
+      "dosis_max_ha": 3.0,
+      "agua_l_ha": 400,
+      "intervalo_dias": 7,
+      "aplicaciones_max_ciclo": 6,
+      "carencia_dias": 7,
+      "reingreso_horas": 24,
+      "presentacion": 1,
+      "precio_presentacion": 28,
+      "frac": "M01",
+      "modo_aplicacion": "Aspersión foliar preventiva. Evitar mezclar con productos ácidos. Puede causar fitotoxicidad con calor intenso."
+    },
+    "cimoxanil_mancozeb": {
+      "nombre": "Cimoxanil 8 % + Mancozeb 64 % WP",
+      "ingrediente": "Cimoxanil + Mancozeb",
+      "tipo": "Fungicida translaminar + protectante",
+      "formulacion": "polvo",
+      "unidad": "kg",
+      "dosis_min_ha": 2.0,
+      "dosis_max_ha": 2.5,
+      "agua_l_ha": 400,
+      "intervalo_dias": 7,
+      "aplicaciones_max_ciclo": 4,
+      "carencia_dias": 14,
+      "reingreso_horas": 24,
+      "presentacion": 1,
+      "precio_presentacion": 45,
+      "frac": "27 + M03",
+      "modo_aplicacion": "Aspersión foliar. Tiene acción curativa de 1-2 días tras la infección; aplicar apenas se detecten síntomas o tras lluvias."
+    },
+    "metalaxil_mancozeb": {
+      "nombre": "Metalaxil-M 4 % + Mancozeb 64 % WG",
+      "ingrediente": "Metalaxil-M + Mancozeb",
+      "tipo": "Fungicida sistémico + protectante",
+      "formulacion": "polvo",
+      "unidad": "kg",
+      "dosis_min_ha": 2.5,
+      "dosis_max_ha": 2.5,
+      "agua_l_ha": 400,
+      "intervalo_dias": 10,
+      "aplicaciones_max_ciclo": 3,
+      "carencia_dias": 14,
+      "reingreso_horas": 48,
+      "presentacion": 1,
+      "precio_presentacion": 75,
+      "frac": "4 + M03",
+      "modo_aplicacion": "Aspersión foliar. Máximo 3 aplicaciones por ciclo; alternar con otro modo de acción."
+    },
+    "dimetomorf": {
+      "nombre": "Dimetomorf 50 % WP",
+      "ingrediente": "Dimetomorf",
+      "tipo": "Fungicida sistémico local (antiesporulante)",
+      "formulacion": "polvo",
+      "unidad": "kg",
+      "dosis_min_ha": 0.4,
+      "dosis_max_ha": 0.5,
+      "agua_l_ha": 400,
+      "intervalo_dias": 7,
+      "aplicaciones_max_ciclo": 4,
+      "carencia_dias": 7,
+      "reingreso_horas": 24,
+      "presentacion": 0.5,
+      "precio_presentacion": 85,
+      "frac": "40",
+      "modo_aplicacion": "Aspersión foliar, preferible mezclado con un protectante (mancozeb)."
+    },
+    "propamocarb": {
+      "nombre": "Propamocarb HCl 72 % SL",
+      "ingrediente": "Propamocarb",
+      "tipo": "Fungicida sistémico",
+      "formulacion": "liquido",
+      "unidad": "L",
+      "dosis_min_ha": 1.5,
+      "dosis_max_ha": 2.0,
+      "agua_l_ha": 400,
+      "intervalo_dias": 7,
+      "aplicaciones_max_ciclo": 4,
+      "carencia_dias": 14,
+      "reingreso_horas": 24,
+      "presentacion": 1,
+      "precio_presentacion": 70,
+      "frac": "28",
+      "modo_aplicacion": "Aspersión foliar. Alternar con otros grupos FRAC."
+    }
+  }
+}

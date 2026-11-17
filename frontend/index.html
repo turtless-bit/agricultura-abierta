@@ -1,0 +1,1548 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font: 14px system-ui, sans-serif; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<title>AgriculturaAbierta</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: barra fija con pestañas; cada pestaña es una sola vista. Calculadora = formulario a la izquierda, resultado fijo a la derecha */
+:root {
+  --bg: #f2f5ef;
+  --surface: #ffffff;
+  --surface-2: #f7f9f5;
+  --ink: #16241b;
+  --muted: #5a6b5f;
+  --line: #dce4d8;
+  --leaf: #2e7d4b;
+  --leaf-strong: #1d5c35;
+  --leaf-soft: #e2efe3;
+  --on-leaf: #ffffff;
+  --soil: #a8642b;
+  --soil-soft: #f6ead9;
+  --warn: #b7791f;
+  --warn-soft: #fbf1dc;
+  --shadow: 0 1px 2px rgba(22,36,27,.06), 0 8px 24px rgba(22,36,27,.06);
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1511; --surface: #16201a; --surface-2: #1b2720; --ink: #e5eee7; --muted: #9bad9f; --line: #29372e;
+    --leaf: #5cbd7e; --leaf-strong: #86d6a1; --leaf-soft: #1c3224; --on-leaf: #0b140e;
+    --soil: #e3a468; --soil-soft: #36271a; --warn: #e8b45c; --warn-soft: #342913;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1511; --surface: #16201a; --surface-2: #1b2720; --ink: #e5eee7; --muted: #9bad9f; --line: #29372e;
+  --leaf: #5cbd7e; --leaf-strong: #86d6a1; --leaf-soft: #1c3224; --on-leaf: #0b140e;
+  --soil: #e3a468; --soil-soft: #36271a; --warn: #e8b45c; --warn-soft: #342913;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(clamp(16px, 2.5vw, 40px), env(safe-area-inset-left, 0px)); padding-right: max(clamp(16px, 2.5vw, 40px), env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+.wrap { width: 100%; }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+
+/* Barra */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--bg); padding-block: 14px; }
+.top-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; font-size: 1.3rem; }
+.brand svg { width: 34px; height: 34px; }
+.tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+.tab {
+  display: flex; align-items: center; gap: 8px; border: 0; background: transparent; border-radius: 999px;
+  padding: 9px 16px; font-weight: 600; cursor: pointer; color: var(--muted);
+}
+.tab svg { width: 18px; height: 18px; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--leaf); color: var(--on-leaf); }
+
+.intro { padding-block: 18px 8px; }
+#v-calculadora .intro { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.volver { padding: 8px 14px 8px 10px; }
+.intro h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); font-weight: 800; }
+.intro p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; }
+.eyebrow { font-size: .72rem; text-transform: uppercase; letter-spacing: .09em; font-weight: 700; color: var(--muted); margin: 0 0 8px; }
+
+/* ---------- Diagnóstico ---------- */
+.diag { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 18px; margin-top: 16px; align-items: stretch; }
+#diag-res { display: flex; flex-direction: column; gap: 16px; }
+.ver-prods { margin-top: auto; align-self: flex-end; }
+.ver-prods svg { transition: transform .2s; }
+.ver-prods[aria-expanded="true"] svg { transform: rotate(180deg); }
+.rec { border-top: 1px solid var(--line); padding-top: 14px; }
+.qcalc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+.q { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.q.span2 { grid-column: span 2; }
+.q > label, .q-head label { font-weight: 600; font-size: .9rem; }
+.q-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.chip.sm { padding: 5px 12px; font-size: .8rem; }
+.q-prod { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: center; }
+.q-prod svg { width: 44px; height: 52px; display: block; }
+.input select { border: 0; border-left: 1px solid var(--line); background: var(--surface-2); padding: 12px; font: inherit; font-weight: 600; color: var(--ink); outline: none; cursor: pointer; }
+.fila3 { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: end; }
+@media (max-width: 760px) { .fila3 { grid-template-columns: minmax(0, 1fr); } }
+.r-blocks { display: grid; grid-template-columns: 1.4fr 1fr 1fr; border-top: 1px solid var(--line); }
+.r-block { padding: 18px; border-right: 1px solid var(--line); min-width: 0; display: grid; gap: 12px; align-content: start; }
+.r-block:last-child { border-right: 0; }
+.r-block h3, .r-cal h3 { font-size: 1.05rem; }
+.kv { margin: 0; display: grid; gap: 0; }
+.kv div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+.kv div:last-child { border-bottom: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 700; text-align: right; }
+.kv .total dt, .kv .total dd { color: var(--soil); font-size: 1.1rem; font-weight: 800; }
+.buy { background: var(--soil-soft); }
+.buy-big { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 1.6rem; line-height: 1.15; color: var(--soil); }
+.ok-txt, .bad-txt { margin: 0; font-size: .88rem; border-radius: 10px; padding: 8px 12px; }
+.ok-txt { background: var(--leaf-soft); color: var(--leaf-strong); }
+.bad-txt { background: var(--warn-soft); color: var(--warn); }
+.r-cal { padding: 18px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
+.cal { display: flex; flex-wrap: wrap; gap: 8px; }
+.cal div { background: var(--leaf-soft); border-radius: 12px; padding: 8px 14px; display: grid; }
+.cal small { color: var(--muted); font-size: .75rem; font-weight: 600; }
+.cal b { color: var(--leaf-strong); text-transform: capitalize; }
+.cal .harvest { background: var(--soil-soft); }
+.cal .harvest b { color: var(--soil); }
+@media (max-width: 900px) { .r-blocks { grid-template-columns: minmax(0, 1fr); } .r-block { border-right: 0; border-bottom: 1px solid var(--line); } }
+.lugar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .lugar { grid-template-columns: minmax(0, 1fr); } }
+.sev { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.sev button {
+  display: grid; justify-items: center; gap: 4px; text-align: center; padding: 12px 8px; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 14px; background: var(--surface-2);
+}
+.sev button:hover { border-color: var(--leaf); }
+.sev button[aria-pressed="true"] { border-color: var(--leaf); background: var(--leaf-soft); }
+.sev svg { width: 56px; height: 56px; }
+.sev b { font-size: .9rem; }
+.sev small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+.input.select select { border: 0; background: transparent; padding: 12px 14px; width: 100%; min-width: 0; font: inherit; font-weight: 600; color: var(--ink); outline: none; }
+.qres { display: grid; gap: 10px; }
+.qstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.qstats > div { padding: 12px 14px; min-width: 0; border-right: 1px solid var(--line); }
+.qstats > div:last-child { border-right: 0; }
+.qstats small { display: block; color: var(--muted); font-size: .75rem; font-weight: 600; }
+.qstats b { display: block; font-size: 1.1rem; line-height: 1.3; }
+.qstats span { font-size: .78rem; color: var(--muted); }
+.qstats .cost-cell { background: var(--soil-soft); }
+.qstats .cost-cell b, .qstats .cost-cell small { color: var(--soil); }
+.budget { border-radius: 12px; padding: 10px 14px; font-size: .9rem; }
+.budget.ok { background: var(--leaf-soft); color: var(--leaf-strong); }
+.budget.bad { background: var(--warn-soft); color: var(--warn); }
+@media (max-width: 1100px) { .qstats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .qstats > div:nth-child(2) { border-right: 0; } .qstats > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); } }
+@media (max-width: 560px) { .qcalc { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .q.span2 { grid-column: span 2; } .qcalc > .ver-prods { grid-column: span 2; } }
+.drop {
+  display: grid; place-items: center; aspect-ratio: 1 / 1; max-width: 100%; border: 2px dashed var(--line); border-radius: 14px;
+  background: var(--surface-2); cursor: pointer; overflow: hidden; position: relative; width: 100%; max-height: 72vh;
+}
+.drop.over { border-color: var(--leaf); }
+.drop canvas, .drop img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.drop-hint { position: absolute; inset: auto 10px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 12px; font-size: .85rem; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow); }
+.drop-hint svg { width: 18px; height: 18px; color: var(--leaf); flex: none; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; padding: 12px 18px;
+  font-weight: 600; cursor: pointer; background: var(--leaf); color: var(--on-leaf);
+}
+.btn:hover { background: var(--leaf-strong); }
+.btn.ghost { background: var(--leaf-soft); color: var(--leaf-strong); }
+.btn.ghost:hover { filter: brightness(.97); }
+.btn svg { width: 18px; height: 18px; }
+
+.verdict { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+.verdict h2 { font-size: 1.7rem; }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; border-radius: 999px; padding: 4px 10px; }
+.badge.bad { background: var(--warn-soft); color: var(--warn); }
+.badge.ok { background: var(--leaf-soft); color: var(--leaf-strong); }
+.badge.ex { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.conf { text-align: right; flex: none; }
+.conf b { display: block; font-family: var(--f-display); font-size: 2rem; line-height: 1; color: var(--leaf-strong); }
+.conf small { color: var(--muted); }
+.bars { display: grid; gap: 8px; margin: 18px 0; }
+.bar { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) 3rem; gap: 10px; align-items: center; font-size: .88rem; }
+.bar .track { height: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--leaf); border-radius: 99px; transition: width .5s ease; }
+.bar span:last-child { text-align: right; }
+.block { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+.block h3 { font-size: 1.02rem; margin-bottom: 8px; }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.checks li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; }
+.checks svg { width: 18px; height: 18px; color: var(--leaf); margin-top: 2px; }
+.mini-prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.mini {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; cursor: pointer;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px;
+}
+.mini:hover { border-color: var(--leaf); }
+.mini svg { width: 44px; height: 52px; }
+.mini b { display: block; font-size: .85rem; line-height: 1.25; }
+.mini small { color: var(--leaf-strong); font-weight: 600; font-size: .78rem; }
+
+/* ---------- Calculadora ---------- */
+.calc { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 16px; align-items: start; }
+.form { display: grid; gap: 14px; }
+.field { display: grid; gap: 10px; }
+.field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.field-head h3 { font-size: 1.05rem; }
+.field-head small { color: var(--muted); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 8px 14px; font-weight: 600;
+  cursor: pointer; font-size: .9rem;
+}
+.chip:hover { border-color: var(--leaf); }
+.chip[aria-pressed="true"] { background: var(--leaf); border-color: var(--leaf); color: var(--on-leaf); }
+/* Franja deslizable de productos */
+.prods {
+  display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+  padding-bottom: 8px; scrollbar-width: thin; -webkit-overflow-scrolling: touch;
+}
+.prods .prod { flex: 0 0 170px; scroll-snap-align: start; align-content: start; }
+.prod {
+  display: grid; justify-items: center; gap: 6px; text-align: center; cursor: pointer; padding: 12px 10px 10px;
+  border: 1.5px solid var(--line); border-radius: 14px; background: var(--surface-2); position: relative;
+}
+.prod:hover { border-color: var(--leaf); }
+.prod[aria-pressed="true"] { border-color: var(--leaf); background: var(--leaf-soft); }
+.prod[aria-pressed="true"]::after {
+  content: ""; position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; border-radius: 50%; background: var(--leaf)
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center / 12px no-repeat;
+}
+.prod svg { width: 88px; height: 108px; }
+.prod b { font-size: .85rem; line-height: 1.25; }
+.prod small { color: var(--muted); font-size: .76rem; }
+.prod .price { color: var(--soil); font-weight: 700; font-size: .82rem; }
+
+.input {
+  display: flex; align-items: center; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden;
+}
+.input:focus-within { border-color: var(--leaf); box-shadow: 0 0 0 3px var(--leaf-soft); }
+.input input { border: 0; background: transparent; padding: 12px 14px; width: 100%; min-width: 0; outline: none; font-size: 1.05rem; font-weight: 600; }
+.input span { padding: 0 14px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.input .pre { padding-right: 0; }
+.dims { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: center; }
+.dims > span { color: var(--muted); font-weight: 700; }
+.hint { font-size: .85rem; color: var(--muted); margin: 0; }
+.hint b { color: var(--ink); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 5px; }
+.seg button { border: 0; background: transparent; border-radius: 10px; padding: 8px 6px; cursor: pointer; display: grid; gap: 1px; }
+.seg button b { font-size: .9rem; }
+.seg button small { font-size: .75rem; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); box-shadow: var(--shadow); }
+.seg button[aria-pressed="true"] b { color: var(--leaf-strong); }
+.stepper { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.stepper button { border: 0; background: var(--surface-2); font-size: 1.3rem; font-weight: 700; cursor: pointer; color: var(--leaf-strong); }
+.stepper button:disabled { color: var(--line); cursor: default; }
+.stepper output { text-align: center; padding: 10px; font-weight: 700; font-size: 1.05rem; }
+
+/* Resultado */
+.result { display: grid; gap: 14px; }
+@media (min-width: 900px) { .receipt .grid2 { grid-template-columns: repeat(4, minmax(0, 1fr)); } .receipt .cell { border-right: 1px solid var(--line); } .receipt .cell:last-child { border-right: 0; } }
+.receipt { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; }
+.r-head { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 14px; align-items: center; padding: 18px; background: var(--leaf-soft); }
+.r-head > svg { width: 76px; height: 90px; }
+.cient { font-family: var(--f-body); font-weight: 400; font-size: .62em; color: var(--muted); letter-spacing: 0; }
+.prod { position: relative; }
+.prod .tag-mejor, .prod .tag-no { font-size: .7rem; font-weight: 700; border-radius: 999px; padding: 2px 8px; }
+.prod .tag-mejor { background: var(--leaf); color: var(--on-leaf); }
+.prod .tag-no { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.prod.descartado > svg, .prod.descartado > img, .prod.descartado > b { opacity: .5; }
+.razones { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: .86rem; }
+.razones li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; align-items: start; }
+.razones svg { width: 16px; height: 16px; margin-top: 2px; }
+.razones .si { color: var(--leaf-strong); }
+.razones .no { color: var(--warn); }
+.r-head > div > * { grid-column: 1; }
+.cl-riesgo { margin: 6px 0 0; font-size: .88rem; border-radius: 8px; padding: 4px 10px; display: inline-block; }
+.cl-riesgo.alto { background: var(--warn-soft); color: var(--warn); }
+.cl-riesgo.medio { background: var(--soil-soft); color: var(--soil); }
+.cl-riesgo.bajo { background: var(--leaf-soft); color: var(--leaf-strong); }
+.prod-img { display: block; object-fit: contain; background: #fff; border-radius: 10px; }
+.prod .prod-img { width: 88px; height: 108px; }
+.mini .prod-img { width: 44px; height: 52px; }
+.r-head .prod-img { width: 76px; height: 110px; }
+.docs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.doc {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 10px; font-size: .85rem; font-weight: 600;
+  background: var(--surface); color: var(--leaf-strong); border: 1px solid var(--line); text-decoration: none;
+}
+.doc:hover { border-color: var(--leaf); }
+.doc svg { width: 16px; height: 16px; }
+.r-head h2 { font-size: 1.2rem; }
+.r-head p { margin: 2px 0 0; font-size: .85rem; color: var(--muted); }
+.hero-num { padding: 18px; border-bottom: 1px solid var(--line); }
+.hero-num .big { font-family: var(--f-display); font-weight: 800; font-size: 2.6rem; line-height: 1.05; color: var(--leaf-strong); }
+.hero-num .big small { font-size: 1.1rem; font-weight: 600; }
+.hero-num p { margin: 4px 0 0; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; }
+.cell { padding: 14px 18px; border-bottom: 1px solid var(--line); min-width: 0; }
+.cell:nth-child(odd) { border-right: 1px solid var(--line); }
+.cell small { display: block; color: var(--muted); font-size: .78rem; font-weight: 600; }
+.cell b { display: block; font-size: 1.15rem; line-height: 1.3; }
+.cell span { font-size: .8rem; color: var(--muted); }
+.cost { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; background: var(--soil-soft); }
+.cost small { display: block; color: var(--soil); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+.cost b { font-family: var(--f-display); font-size: 1.9rem; color: var(--soil); line-height: 1.1; }
+.cost .right { text-align: right; font-size: .85rem; color: var(--muted); }
+.note { display: flex; gap: 8px; padding: 10px 18px; font-size: .84rem; background: var(--warn-soft); color: var(--warn); }
+.timeline { display: flex; gap: 6px; flex-wrap: wrap; }
+.timeline span { font-size: .8rem; font-weight: 600; border-radius: 8px; padding: 4px 9px; background: var(--leaf-soft); color: var(--leaf-strong); }
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; font-size: .9rem; }
+.steps li::before {
+  content: counter(s); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--leaf-soft); color: var(--leaf-strong); font-weight: 700; font-size: .8rem;
+}
+.steps b { color: var(--ink); }
+
+/* ---------- Enfermedades ---------- */
+.enfs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 16px; }
+.enf h2 { font-size: 1.35rem; }
+.enf .agent { font-style: italic; color: var(--muted); margin: 2px 0 12px; }
+.enf dl { margin: 0; display: grid; gap: 12px; }
+.enf dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .09em; font-weight: 700; color: var(--muted); }
+.enf dd { margin: 3px 0 0; }
+
+@media (min-width: 1280px) {
+  .form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .form > .panel:first-child { grid-column: 1 / -1; }
+  .form > .two { grid-column: 1 / -1; }
+  .enfs { gap: 24px; }
+}
+@media (max-width: 860px) {
+  .diag, .calc, .enfs { grid-template-columns: minmax(0, 1fr); }
+  .result { position: static; }
+  .drop { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 560px) {
+  .top-in { flex-direction: column; align-items: stretch; }
+  .tabs { justify-content: space-between; }
+  .tab { flex: 1; justify-content: center; padding: 9px 8px; font-size: .88rem; }
+  .tab svg { display: none; }
+  .two { grid-template-columns: minmax(0, 1fr); }
+  .panel { padding: 16px; }
+  .bar { grid-template-columns: 7rem minmax(0, 1fr) 2.6rem; }
+  .hero-num .big { font-size: 2.2rem; }
+  .prods .prod { flex-basis: 150px; }
+}
+/* Clima para fumigar */
+.clima { display: grid; gap: 14px; width: 100%; }
+.clima h3 { font-size: 1.15rem; }
+.cl-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.cl-lugar { margin: 2px 0 0; font-size: .85rem; }
+.cl-mejor { border-radius: 12px; padding: 10px 16px; display: grid; }
+.cl-mejor small { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.cl-mejor b { font-size: 1.1rem; }
+.cl-mejor.ok { background: var(--leaf-soft); color: var(--leaf-strong); }
+.cl-mejor.no { background: var(--warn-soft); color: var(--warn); }
+.cl-otras { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: .85rem; }
+.cl-otras small { color: var(--muted); }
+.cl-otras span { background: var(--leaf-soft); color: var(--leaf-strong); border-radius: 8px; padding: 3px 9px; font-weight: 600; }
+.cl-tabla { display: grid; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.cl-fila { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: 10px; align-items: center; min-width: 640px; }
+.cl-dia { font-size: .85rem; font-weight: 600; }
+.cl-horas { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 3px; }
+.cl-h { border: 0; border-radius: 6px; height: 30px; cursor: pointer; font: inherit; font-size: .68rem; font-weight: 700; padding: 0; color: #fff; }
+.cl-h.ok { background: var(--leaf); }
+.cl-h.aviso { background: var(--warn); }
+.cl-h.no { background: var(--line); color: var(--muted); }
+.cl-h[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.cl-ley { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
+.cl-ley span { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: -8px; }
+.cl-ley .ok { background: var(--leaf); } .cl-ley .aviso { background: var(--warn); } .cl-ley .no { background: var(--line); }
+.cl-ley em { margin-left: auto; font-style: normal; }
+.cl-detalle { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.cl-det-cab { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cl-tag { font-size: .75rem; font-weight: 700; border-radius: 999px; padding: 3px 10px; }
+.cl-tag.ok { background: var(--leaf-soft); color: var(--leaf-strong); }
+.cl-tag.aviso { background: var(--warn-soft); color: var(--warn); }
+.cl-tag.no { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.cl-factores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.cl-factores > div { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.cl-factores small { display: block; color: var(--muted); font-size: .75rem; font-weight: 600; }
+.cl-factores b { display: block; font-size: 1.05rem; }
+.cl-factores span { font-size: .78rem; color: var(--muted); }
+.cl-motivos { margin: 0; padding-left: 18px; font-size: .88rem; color: var(--warn); }
+.cl-ok { margin: 0; font-size: .88rem; color: var(--leaf-strong); }
+.cl-nota { margin: 0; font-size: .82rem; color: var(--muted); }
+.cal div small + b + small { color: var(--leaf-strong); }
+@media (max-width: 760px) { .cl-factores { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cl-ley em { margin-left: 0; } }
+/* Sección 2 ocupa toda la ventana (escritorio) */
+@media (min-width: 861px) {
+  #v-calculadora:not([hidden]) { display: flex; flex-direction: column; min-height: calc(100dvh - 44px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); padding-bottom: 12px; }
+  body:has(#v-calculadora:not([hidden])) { padding-block-end: 0; }
+  #v-calculadora .intro { padding-block: 4px 0; }
+  #v-calculadora .intro h1 { font-size: 1.6rem; }
+  #calc { display: flex; flex-direction: column; gap: 12px; flex: 1; margin-top: 10px; }
+  #calc .form { flex: none; }
+  #calc .form > .panel:first-child { padding: 10px 12px; }
+  .prods { gap: 8px; padding-bottom: 4px; }
+  .prods .prod { flex: 0 0 180px; padding: 10px 10px 8px; gap: 6px; }
+  .prod svg, .prod .prod-img { width: 96px; height: 120px; }
+  .prod b { font-size: .85rem; }
+  .prod[aria-pressed="true"]::after { top: 6px; right: 6px; }
+  #calc .result { flex: 1; display: flex; }
+  .receipt {
+    flex: 1; display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+  }
+  .r-head { grid-column: 1 / -1; grid-template-columns: 64px minmax(0, 1fr); padding: 12px 22px; }
+  .r-head .prod-img { width: 64px; height: 84px; }
+  .r-head > svg { width: 64px; height: 76px; }
+  .r-head > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: center; }
+  .r-head > div > .docs { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
+  #calc .form { display: block; width: 100%; }
+  .r-block { padding: 16px 22px; }
+  .r-block .steps { gap: 10px; }
+  .r-block .steps li { font-size: .92rem; }
+  .r-head h2 { font-size: 1.35rem; }
+  .r-blocks { display: contents; }
+  .r-block { padding: 20px 24px; gap: 14px; border-top: 1px solid var(--line); border-right: 1px solid var(--line); }
+  .r-block:nth-child(1) { grid-column: 1; grid-row: 2 / 4; }
+  .r-block:nth-child(2) { grid-column: 2; grid-row: 2; }
+  .r-block:nth-child(3) { grid-column: 3; grid-row: 2; border-right: 0; }
+  .r-cal { grid-column: 2 / 4; grid-row: 3; padding: 18px 24px; }
+  .r-block h3, .r-cal h3 { font-size: 1.15rem; }
+  .r-block .steps { gap: 12px; }
+  .r-block .steps li { font-size: .95rem; }
+  .kv div { padding: 12px 0; }
+  .kv dt, .kv dd { font-size: 1rem; }
+  .buy-big { font-size: 1.9rem; }
+  .cal div { padding: 10px 16px; }
+}
+/* Sección 1 en una sola pantalla (escritorio) */
+@media (min-width: 861px) {
+  .top { padding-block: 8px; }
+  .brand { font-size: 1.1rem; }
+  .brand svg { width: 28px; height: 28px; }
+  #v-diagnostico .intro { padding-block: 4px 0; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  #v-diagnostico .intro h1 { font-size: 1.6rem; }
+  #v-diagnostico .intro p { margin: 0; }
+  .diag { grid-template-columns: minmax(0, 290px) minmax(0, 1fr); gap: 14px; margin-top: 10px; }
+  .diag .panel { padding: 14px 16px; }
+  #diag-res { gap: 10px; }
+  .verdict h2 { font-size: 1.35rem; }
+  .verdict .eyebrow { margin-bottom: 2px; }
+  .conf b { font-size: 1.6rem; }
+  .qcalc { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px 12px; padding-top: 10px; }
+  .qcalc > .q { grid-column: span 2; }
+  .qcalc > .q.span2 { grid-column: span 6; }
+  .qcalc > .q:first-child { grid-column: span 2; }
+  .qcalc > .q:nth-child(-n+3) { align-content: end; }
+  .qcalc > .q:has(#q-buscar) { grid-column: span 4; }
+  .qcalc > .ver-prods { grid-column: span 2; align-self: end; justify-self: stretch; margin: 0; }
+  .fila3 { gap: 12px; }
+  .q { gap: 4px; }
+  .q > label, .q-head label { font-size: .84rem; }
+  .q-head { min-height: 26px; }
+  .chip.sm { padding: 3px 10px; }
+  .qcalc .input input, .qcalc .input select { padding-block: 8px; font-size: .95rem; }
+  .qcalc .stepper button { font-size: 1.1rem; }
+  .qcalc .stepper output { padding: 7px; font-size: .95rem; }
+  .sev { gap: 8px; }
+  .sev button { grid-template-columns: 34px minmax(0, 1fr); justify-items: start; text-align: left; align-items: center; column-gap: 8px; row-gap: 0; padding: 6px 10px; }
+  .sev svg { width: 34px; height: 34px; grid-row: span 2; }
+  .sev b { font-size: .85rem; }
+  .sev small { font-size: .74rem; line-height: 1.25; }
+  .drop { max-height: none; }
+  .ver-prods { padding: 9px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="var(--leaf)"/><path d="M12 27c0-9 6-15 17-15 0 11-6 17-14 17" fill="none" stroke="var(--on-leaf)" stroke-width="2.6" stroke-linecap="round"/><path d="M11 30c3-5 7-9 12-12" fill="none" stroke="var(--on-leaf)" stroke-width="2.6" stroke-linecap="round"/></svg>
+      AgriculturaAbierta
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- DIAGNÓSTICO -->
+  <section id="v-diagnostico" role="tabpanel" aria-labelledby="tab-diagnostico">
+    <div class="intro">
+      <h1>¿Qué tiene tu papa?</h1>
+      <p>Sube una foto de la hoja afectada.</p>
+    </div>
+    <div class="diag">
+      <div class="panel">
+        <p class="eyebrow">Foto de la hoja</p>
+        <label class="drop" id="drop" for="foto">
+          <canvas id="lienzo" width="448" height="448" aria-label="Foto de la hoja"></canvas>
+        </label>
+        <input type="file" id="foto" accept="image/*" hidden>
+        <div class="row">
+          <button class="btn" id="btn-subir" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            Subir foto</button>
+        </div>
+      </div>
+
+      <div class="panel" id="diag-res">
+        <div id="verdict" aria-live="polite"></div>
+        <form class="qcalc" id="qcalc" novalidate>
+          <div class="q span2">
+            <div class="q-head"><label for="q-area">Medidas de tu terreno</label>
+              <div class="chips" id="q-modo">
+                <button class="chip sm" type="button" data-modo="total" aria-pressed="true">m²</button>
+                <button class="chip sm" type="button" data-modo="lados" aria-pressed="false">Largo × ancho</button>
+              </div>
+            </div>
+            <div id="q-total" class="input"><input id="q-area" type="number" inputmode="decimal" min="0" step="any" value="1000"><span>m²</span></div>
+            <div id="q-lados" class="dims" hidden>
+              <div class="input"><input id="q-largo" type="number" inputmode="decimal" min="0" step="any" value="50" aria-label="Largo en metros"><span>m</span></div>
+              <span>×</span>
+              <div class="input"><input id="q-ancho" type="number" inputmode="decimal" min="0" step="any" value="20" aria-label="Ancho en metros"><span>m</span></div>
+            </div>
+          </div>
+          <div class="q">
+            <label for="q-apl">¿Cuántas aplicaciones estás dispuesto a hacer?</label>
+            <div class="stepper">
+              <button type="button" id="q-menos" aria-label="Quitar una aplicación">−</button>
+              <output id="q-apl" class="num"></output>
+              <button type="button" id="q-mas" aria-label="Añadir una aplicación">+</button>
+            </div>
+          </div>
+          <div class="q">
+            <label for="q-presu">¿Cuánto presupuesto tienes?</label>
+            <div class="input"><span class="pre">S/</span><input id="q-presu" type="number" inputmode="decimal" min="0" step="10" value="150"></div>
+          </div>
+          <div class="q span2">
+            <label id="l-avance">¿Qué tan avanzada parece la enfermedad?</label>
+            <div class="sev" id="q-avance" role="group" aria-labelledby="l-avance"></div>
+          </div>
+          <div class="fila3">
+          <div class="q">
+            <label for="q-plantado">¿Hace cuánto plantaste?</label>
+            <div class="input"><input id="q-plantado" type="number" inputmode="numeric" min="0" step="1" placeholder="0">
+              <select id="q-plantado-u" aria-label="Unidad de tiempo"><option value="dias">días</option><option value="semanas" selected>semanas</option><option value="meses">meses</option></select></div>
+          </div>
+          <div class="q">
+            <label for="q-cosecha">¿Cuánto falta para cosechar?</label>
+            <div class="input"><input id="q-cosecha" type="number" inputmode="numeric" min="0" step="1" placeholder="0">
+              <select id="q-cosecha-u" aria-label="Unidad de tiempo"><option value="dias">días</option><option value="semanas" selected>semanas</option><option value="meses">meses</option></select></div>
+          </div>
+          <div class="q">
+            <label for="q-mochila">¿De cuántos litros es tu mochila fumigadora?</label>
+            <div class="input"><input id="q-mochila" type="number" inputmode="decimal" min="1" step="any" value="20"><span>litros</span></div>
+          </div>
+          </div>
+          <div class="q span2">
+            <label for="q-depto">¿Dónde plantaste tus plantas?</label>
+            <div class="lugar">
+              <div class="input"><input id="q-depto" type="text" list="dl-depto" autocomplete="off" required placeholder="Departamento" aria-label="Departamento"></div>
+              <div class="input"><input id="q-provincia" type="text" list="dl-prov" autocomplete="off" required placeholder="Provincia" aria-label="Provincia"></div>
+              <div class="input"><input id="q-distrito" type="text" list="dl-dist" autocomplete="off" required placeholder="Distrito" aria-label="Distrito"></div>
+            </div>
+            <datalist id="dl-depto"></datalist><datalist id="dl-prov"></datalist><datalist id="dl-dist"></datalist>
+          </div>
+          <div class="q span2">
+            <label id="l-usados">¿Qué productos ya usaste?</label>
+            <div class="input"><input id="q-buscar" type="search" autocomplete="off" placeholder="Opcional" aria-label="Buscar producto que ya usaste"></div>
+            <div class="chips" id="q-usados" role="group" aria-labelledby="l-usados"></div>
+          </div>
+          <button class="btn ver-prods" id="ver-prods" type="button">
+            <span>Ver productos recomendados</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALCULADORA -->
+  <section id="v-calculadora" role="tabpanel" aria-labelledby="tab-calculadora" hidden>
+    <div class="intro">
+      <button class="btn ghost volver" id="btn-volver" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        Volver</button>
+      <h1>Productos recomendados</h1>
+    </div>
+    <div class="calc" id="calc">
+      <div class="form">
+        <div class="panel field">
+          <div class="chips" id="c-enf" hidden></div>
+          <div class="prods" id="c-prods"></div>
+        </div>
+
+        <div class="panel field" hidden>
+          <div class="field-head"><h3>Medidas de la chacra</h3>
+            <div class="chips" id="c-modo">
+              <button class="chip" type="button" data-modo="total" aria-pressed="true">Área en m²</button>
+              <button class="chip" type="button" data-modo="lados" aria-pressed="false">Largo × ancho</button>
+            </div>
+          </div>
+          <div id="area-total">
+            <div class="input"><input id="c-area" type="number" inputmode="decimal" min="0" step="any" value="1000" aria-label="Área en metros cuadrados"><span>m²</span></div>
+          </div>
+          <div id="area-lados" class="dims" hidden>
+            <div class="input"><input id="c-largo" type="number" inputmode="decimal" min="0" step="any" value="50" aria-label="Largo en metros"><span>m</span></div>
+            <span>×</span>
+            <div class="input"><input id="c-ancho" type="number" inputmode="decimal" min="0" step="any" value="20" aria-label="Ancho en metros"><span>m</span></div>
+          </div>
+          <p class="hint" id="area-hint"></p>
+        </div>
+
+        <div class="panel field" hidden>
+          <div class="field-head"><h3>Tu mochila</h3><small>Capacidad del tanque</small></div>
+          <div class="chips" id="c-tanques"></div>
+          <div class="input"><input id="c-tanque" type="number" inputmode="decimal" min="1" step="any" value="20" aria-label="Capacidad de la mochila en litros"><span>litros</span></div>
+        </div>
+
+        <div class="panel field" hidden>
+          <div class="field-head"><h3>Dosis</h3><small>Según qué tan fuerte es el ataque</small></div>
+          <div class="seg" id="c-dosis"></div>
+        </div>
+
+        <div class="two" hidden>
+          <div class="panel field">
+            <div class="field-head"><h3>Aplicaciones</h3><small id="apl-max"></small></div>
+            <div class="stepper">
+              <button type="button" id="apl-menos" aria-label="Quitar una aplicación">−</button>
+              <output id="apl-val" class="num"></output>
+              <button type="button" id="apl-mas" aria-label="Añadir una aplicación">+</button>
+            </div>
+          </div>
+          <div class="panel field">
+            <div class="field-head"><h3>Precio</h3><small id="precio-env"></small></div>
+            <div class="input"><span class="pre">S/</span><input id="c-precio" type="number" inputmode="decimal" min="0" step="0.5" aria-label="Precio por envase en soles"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="result" aria-live="polite">
+        <div class="receipt" id="receipt"></div>
+      </aside>
+      <section class="panel clima" id="clima" aria-live="polite" hidden></section>
+    </div>
+  </section>
+
+  <!-- ENFERMEDADES -->
+  <section id="v-enfermedades" role="tabpanel" aria-labelledby="tab-enfermedades" hidden>
+    <div class="intro">
+      <h1>Enfermedades de la papa</h1>
+      <p>Cómo reconocerlas y qué hacer.</p>
+    </div>
+    <div class="enfs" id="enfs"></div>
+  </section>
+</main>
+
+<script>
+/* ================= Datos ================= */
+const ENF = {
+  tizon_temprano: {
+    nombre: "Alternariosis", corto: "Alternariosis", agente: "Alternaria solani", grave: true,
+    sintomas: "Manchas marrones con anillos como una diana, rodeadas de un borde amarillo. Empiezan en las hojas de abajo y suben.",
+    condiciones: "Días cálidos (24-29 °C) con lluvias o rocío, alternados con días secos. Plantas débiles o con poco nitrógeno.",
+    manejo: [
+      "Saca y quema las hojas y restos de plantas enfermas.",
+      "Rota el cultivo: no siembres papa, tomate ni ají en el mismo lugar por 2 o 3 años.",
+      "Abona de forma equilibrada, sobre todo con nitrógeno y potasio.",
+      "Riega temprano en la mañana, no al atardecer.",
+      "Usa semilla certificada y variedades tolerantes."
+    ],
+    productos: ["manzate", "dithane", "mancozeb80", "curzate_m8", "clorotalonil", "azoxistrobina", "difenoconazol"]
+  },
+  tizon_tardio: {
+    nombre: "Rancha", corto: "Rancha", agente: "Phytophthora infestans", grave: true,
+    sintomas: "Manchas verde oscuro a negras, de aspecto aceitoso, que crecen rápido. Con humedad sale un moho blanco por debajo de la hoja. Puede acabar con la chacra en pocos días.",
+    condiciones: "Frío (10-20 °C), lluvias, neblina o rocío por muchas horas.",
+    manejo: [
+      "Actúa de inmediato: es la enfermedad más dañina de la papa.",
+      "Saca las plantas muy afectadas y no dejes montones de papa descartada cerca.",
+      "Aporca bien para proteger los tubérculos.",
+      "Mejora el drenaje para que no se empoce el agua.",
+      "Alterna productos de distinto tipo para que la rancha no se haga resistente."
+    ],
+    productos: ["parancha", "mata_rancha", "infinito", "javari", "consento", "acrobat_mz", "curzate_m8", "sphinx_supra", "trivia", "antracol", "dithane", "manzate", "ridomil"]
+  },
+  sana: {
+    nombre: "Planta sana", corto: "Prevención", agente: "", grave: false,
+    sintomas: "No se ven señales de tizón temprano ni de rancha.",
+    manejo: [
+      "Revisa la chacra una vez por semana.",
+      "En época de lluvias y frío, aplica un producto preventivo como el mancozeb.",
+      "Mantén un buen abonamiento y buen drenaje."
+    ],
+    productos: ["manzate", "dithane", "antracol"]
+  }
+};
+
+// dosis en kg o L por hectárea (etiqueta); agua en L por hectárea; precios en soles
+const PROD = {
+  mancozeb:           { nombre: "Mancozeb 80 % WP", corto: "MANCOZEB", conc: "80 % WP", color: "#c99a1c", tipo: "Preventivo (de contacto)", u: "kg", dmin: 2.0, dmax: 2.5, agua: 400, int: 7, max: 6, carencia: 7, reingreso: 24, env: 1, precio: 32,
+    modo: "Cubre bien las hojas por arriba y por abajo. Aplícalo antes de las lluvias: previene, no cura." },
+  clorotalonil:       { nombre: "Clorotalonil 72 % SC", corto: "CLOROTALONIL", conc: "72 % SC", color: "#2f6fb0", tipo: "Preventivo (de contacto)", u: "L", dmin: 1.5, dmax: 2.0, agua: 400, int: 7, max: 6, carencia: 7, reingreso: 48, env: 1, precio: 50,
+    modo: "Rocía parejo sobre toda la planta, como prevención o al ver las primeras manchas." },
+  azoxistrobina:      { nombre: "Azoxistrobina 25 % SC", corto: "AZOXISTROBINA", conc: "25 % SC", color: "#7a43a3", tipo: "Sistémico (entra en la planta)", u: "L", dmin: 0.3, dmax: 0.5, agua: 300, int: 10, max: 2, carencia: 7, reingreso: 12, env: 0.25, precio: 65,
+    modo: "Rocía sobre las hojas. Úsalo máximo 2 veces por cosecha y alterna con otro producto." },
+  difenoconazol:      { nombre: "Difenoconazol 25 % EC", corto: "DIFENOCONAZOL", conc: "25 % EC", color: "#c0452c", tipo: "Sistémico (cura)", u: "L", dmin: 0.3, dmax: 0.5, agua: 300, int: 14, max: 3, carencia: 14, reingreso: 24, env: 0.25, precio: 45,
+    modo: "Rocía apenas veas las primeras manchas. Alterna con un preventivo." },
+  oxicloruro_cobre:   { nombre: "Oxicloruro de cobre 50 % WP", corto: "COBRE", conc: "50 % WP", color: "#23948a", tipo: "Preventivo a base de cobre", u: "kg", dmin: 2.0, dmax: 3.0, agua: 400, int: 7, max: 6, carencia: 7, reingreso: 24, env: 1, precio: 28,
+    modo: "Rocía como prevención. No lo mezcles con productos ácidos y evita aplicarlo con mucho sol." },
+  cimoxanil_mancozeb: { nombre: "Cimoxanil + Mancozeb WP", corto: "CIMOXANIL+MZ", conc: "8 + 64 % WP", color: "#d4761b", tipo: "Cura y protege", u: "kg", dmin: 2.0, dmax: 2.5, agua: 400, int: 7, max: 4, carencia: 14, reingreso: 24, env: 1, precio: 45,
+    modo: "Aplica apenas veas síntomas o después de lluvias: cura infecciones de 1 o 2 días." },
+  metalaxil_mancozeb: { nombre: "Metalaxil-M + Mancozeb WG", corto: "METALAXIL+MZ", conc: "4 + 64 % WG", color: "#3c8a3c", tipo: "Sistémico + preventivo", u: "kg", dmin: 2.5, dmax: 2.5, agua: 400, int: 10, max: 3, carencia: 14, reingreso: 48, env: 1, precio: 75,
+    modo: "Rocía sobre las hojas. Máximo 3 veces por cosecha; alterna con otro tipo de producto." },
+  dimetomorf:         { nombre: "Dimetomorf 50 % WP", corto: "DIMETOMORF", conc: "50 % WP", color: "#8a5a2b", tipo: "Sistémico (frena el hongo)", u: "kg", dmin: 0.4, dmax: 0.5, agua: 400, int: 7, max: 4, carencia: 7, reingreso: 24, env: 0.5, precio: 85,
+    modo: "Rocía sobre las hojas, mejor mezclado con un preventivo como el mancozeb." },
+  propamocarb:        { nombre: "Propamocarb 72 % SL", corto: "PROPAMOCARB", conc: "72 % SL", color: "#1d8bb3", tipo: "Sistémico", u: "L", dmin: 1.5, dmax: 2.0, agua: 400, int: 7, max: 4, carencia: 14, reingreso: 24, env: 1, precio: 70,
+    modo: "Rocía sobre las hojas y alterna con otros productos." },
+  /* ---- Productos reales (fichas técnicas en imagenes/productos/<id>/) ----
+     nivel: leve | medio | grave (clasificación del equipo)
+     dmin/dmax: dosis por hectárea de la ficha · agua: L/ha (de la ficha cuando da dosis por cilindro de 200 L; si no, 400)
+     precioEst: true = precio aproximado (no hay precios publicados en internet para Perú)
+     Valores marcados "supuesto" no figuran en la ficha. */
+  parancha:     { nivel: "grave", nombre: "PA RANCHA 560 SC", corto: "PA RANCHA", conc: "560 SC", color: "#1f4fa3", tipo: "Azoxystrobin + Cymoxanil + Dimethomorph", u: "L",
+                  dmin: 0.5, dmax: 0.6, agua: 400, int: 7 /* supuesto */, max: 3 /* supuesto */, carencia: 14, reingreso: 24, env: 1, precio: 158,
+                  modo: "Aplícalo al ver los primeros síntomas o cuando el clima favorezca la rancha. No lo mezcles con productos a base de cobre ni con aguas muy alcalinas o ácidas." },
+  mata_rancha:  { nivel: "grave", nombre: "Mata Rancha", corto: "MATA RANCHA", conc: "WP", color: "#2a7a3a", tipo: "Cymoxanil 8 % + Mancozeb 64 %", u: "kg",
+                  dmin: 1.0, dmax: 1.0, agua: 400, int: 7, max: 3, carencia: 14, reingreso: 12, env: 1 /* supuesto */, precio: 40, precioEst: true,
+                  modo: "Aplícalo al aparecer los primeros síntomas, máximo 3 aplicaciones seguidas cada 5 a 10 días. Prepara primero una pasta con poca agua y no guardes la mezcla de un día para otro." },
+  infinito:     { nivel: "grave", nombre: "Infinito 688 SC", corto: "INFINITO", conc: "688 SC", color: "#2e7d32", tipo: "Propamocarb 625 g/L + Fluopicolide 62.5 g/L", u: "L",
+                  dmin: 1.5, dmax: 2.0, agua: 500, int: 7 /* supuesto */, max: 2, carencia: 7, reingreso: 24 /* supuesto */, env: 1, precio: 230, precioEst: true,
+                  modo: "Agita el envase antes de usarlo. Aplícalo al inicio de los síntomas; máximo 2 aplicaciones por campaña dentro de un manejo integrado." },
+  javari:       { nivel: "grave", nombre: "Javari SC", corto: "JAVARI", conc: "SC", color: "#c9b21c", tipo: "Fluazinam 200 g/L + Dimethomorph 200 g/L", u: "L",
+                  dmin: 0.9, dmax: 1.0, agua: 400, int: 7 /* supuesto */, max: 4, carencia: 7, reingreso: 4, env: 1, precio: 220, precioEst: true,
+                  modo: "Usa 0.9 L/ha con los primeros síntomas y 1.0 L/ha con mucha enfermedad. Rota con productos de otro tipo." },
+  consento:     { nivel: "grave", nombre: "Consento 450 SC", corto: "CONSENTO", conc: "450 SC", color: "#1d6fb8", tipo: "Fenamidona 75 g/L + Propamocarb 375 g/L", u: "L",
+                  dmin: 1.5, dmax: 1.75, agua: 400, int: 7 /* supuesto */, max: 3, carencia: 14, reingreso: 24, env: 1, precio: 190, precioEst: true,
+                  modo: "Aplícalo al inicio de la enfermedad. Máximo 3 aplicaciones si haces una campaña al año, o 1 si haces dos." },
+  acrobat_mz:   { nivel: "medio", nombre: "Acrobat MZ", corto: "ACROBAT MZ", conc: "WP", color: "#2a4f9e", tipo: "Dimetomorf 90 g/kg + Mancozeb 600 g/kg", u: "kg",
+                  dmin: 1.5, dmax: 2.5, agua: 400, int: 10, max: 2, carencia: 14, reingreso: 24, env: 1, precio: 85, precioEst: true,
+                  modo: "Aplícalo con lluvias y humedad alta o al ver los primeros síntomas, cubriendo bien el follaje. No lo repitas más de 2 veces seguidas." },
+  curzate_m8:   { nivel: "medio", nombre: "Curzate M-8", corto: "CURZATE M-8", conc: "WP", color: "#3d6fb0", tipo: "Cimoxanil 8 % + Mancozeb 64 %", u: "kg",
+                  dmin: 2.0, dmax: 3.0, agua: 1000, int: 7 /* supuesto */, max: 4 /* supuesto */, carencia: 14, reingreso: 24, env: 1, precio: 55, precioEst: true,
+                  modo: "Aplícalo de forma preventiva o con los primeros síntomas. La etiqueta indica 500 g por cilindro de 200 L." },
+  sphinx_supra: { nivel: "medio", nombre: "Sphinx Supra", corto: "SPHINX SUPRA", conc: "WG", color: "#4a8a3c", tipo: "Clorotalonil 400 g/kg + Dimetomorf 80 g/kg", u: "kg",
+                  dmin: 2.0, dmax: 3.0, agua: 400, int: 7, max: 3, carencia: 14, reingreso: 12, env: 1, precio: 120, precioEst: true,
+                  modo: "Aplícalo de forma preventiva o en los primeros síntomas, con gotas finas y buena cobertura. Usa la dosis alta en zonas donde la rancha es frecuente." },
+  trivia:       { nivel: "medio", nombre: "Trivia 727 PM", corto: "TRIVIA", conc: "727 PM", color: "#6b3fa0", tipo: "Propineb 667 g/kg + Fluopicolide 60 g/kg", u: "kg",
+                  dmin: 1.0, dmax: 1.5, agua: 500, int: 7 /* supuesto */, max: 3, carencia: 14, reingreso: 24 /* supuesto */, env: 1, precio: 100, precioEst: true,
+                  modo: "Aplícalo cuando el clima favorezca la enfermedad o con los primeros síntomas. Máximo 3 aplicaciones por campaña." },
+  antracol:     { nivel: "leve", nombre: "Antracol 70 PM", corto: "ANTRACOL", conc: "70 PM", color: "#3a8d3a", tipo: "Propineb 700 g/kg", u: "kg",
+                  dmin: 1.5, dmax: 2.5, agua: 700, int: 7 /* supuesto */, max: 4 /* supuesto */, carencia: 7, reingreso: 24 /* supuesto */, env: 1, precio: 50, precioEst: true,
+                  modo: "Fungicida preventivo: aplícalo antes de que aparezca la enfermedad, cubriendo bien las hojas." },
+  dithane:      { nivel: "leve", nombre: "Dithane M-45", corto: "DITHANE", conc: "M-45", color: "#c9c21c", tipo: "Mancozeb 800 g/kg", u: "kg",
+                  dmin: 1.0, dmax: 3.0, agua: 400, int: 7, max: 6 /* supuesto */, carencia: 7, reingreso: 24, env: 1, precio: 38, precioEst: true,
+                  modo: "Empieza cuando las plantas midan 10 a 15 cm o antes de los primeros síntomas, y repite cada 7 a 10 días." },
+  mancozeb80:   { nivel: "leve", nombre: "Mancozeb 80 WP", corto: "MANCOZEB", conc: "80 WP", color: "#b5a01c", tipo: "Mancozeb 800 g/kg", u: "kg",
+                  dmin: 0.8, dmax: 1.6, agua: 400, int: 7, max: 6 /* supuesto */, carencia: 7, reingreso: 24, env: 1, precio: 30, precioEst: true,
+                  modo: "Empieza cuando la planta mida 10 a 15 cm; usa la dosis baja al principio y súbela conforme crezca." },
+  manzate:      { nivel: "leve", nombre: "Manzate 200 WP", corto: "MANZATE", conc: "200 WP", color: "#d07a1c", tipo: "Mancozeb 800 g/kg", u: "kg",
+                  dmin: 1.0, dmax: 2.0, agua: 400, int: 7, max: 2, carencia: 7, reingreso: 24, env: 1, precio: 35, precioEst: true,
+                  modo: "Se puede aplicar en cualquier etapa del cultivo, desde los primeros síntomas, cada 5 a 10 días. Máximo 2 aplicaciones por campaña." },
+  ridomil:      { nivel: "leve", nombre: "Ridomil Gold MZ 68 WP", corto: "RIDOMIL GOLD", conc: "68 WP", color: "#c8102e", tipo: "Metalaxil-M 4 % + Mancozeb 64 %", u: "kg",
+                  dmin: 2.0, dmax: 3.0, agua: 400, int: 10, max: 3, carencia: 15, reingreso: 24, env: 1, precio: 95, precioEst: true,
+                  modo: "Preventivo: cada 10 a 14 días. Con síntomas: la segunda a los 5 a 7 días y luego cada 10 a 14. Máximo 3 por campaña." },
+};
+
+// Cómo actúa cada producto (de sus fichas técnicas; revisar con un agrónomo)
+// accion: contacto (solo previene) | sistemico/translaminar (entra en la hoja)
+// cura: puede detener infecciones recientes · lluvia: resistencia al lavado · frac: grupos de resistencia
+const ATRIB = {
+  mancozeb:           { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
+  clorotalonil:       { accion: "contacto",     cura: false, lluvia: "media", frac: ["M05"] },
+  azoxistrobina:      { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["11"] },
+  difenoconazol:      { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["3"] },
+  oxicloruro_cobre:   { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M01"] },
+  cimoxanil_mancozeb: { accion: "translaminar", cura: true,  lluvia: "media", frac: ["27", "M03"] },
+  metalaxil_mancozeb: { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["4", "M03"] },
+  dimetomorf:         { accion: "translaminar", cura: true,  lluvia: "media", frac: ["40"] },
+  propamocarb:        { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["28"] },
+  parancha:           { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["11", "27", "40"] },
+  mata_rancha:        { accion: "translaminar", cura: true,  lluvia: "media", frac: ["27", "M03"] },
+  infinito:           { accion: "translaminar", cura: true,  lluvia: "alta",  frac: ["28", "43"] },
+  javari:             { accion: "translaminar", cura: true,  lluvia: "alta",  frac: ["29", "40"] },
+  consento:           { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["11", "28"] },
+  acrobat_mz:         { accion: "translaminar", cura: true,  lluvia: "media", frac: ["40", "M03"] },
+  curzate_m8:         { accion: "translaminar", cura: true,  lluvia: "media", frac: ["27", "M03"] },
+  sphinx_supra:       { accion: "translaminar", cura: true,  lluvia: "media", frac: ["M05", "40"] },
+  trivia:             { accion: "translaminar", cura: true,  lluvia: "media", frac: ["M03", "43"] },
+  antracol:           { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
+  dithane:            { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
+  mancozeb80:         { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
+  manzate:            { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
+  ridomil:            { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["4", "M03"] },
+};
+Object.entries(ATRIB).forEach(([id, a]) => Object.assign(PROD[id], a));
+["parancha", "mata_rancha", "infinito", "javari", "consento", "acrobat_mz", "curzate_m8", "sphinx_supra", "trivia",
+ "antracol", "dithane", "mancozeb80", "manzate", "ridomil"].forEach((id) => Object.assign(PROD[id], {
+  img: `imagenes/productos/${id}/foto.webp`,
+  ficha: `imagenes/productos/${id}/ficha-tecnica.pdf`,
+  hoja: `imagenes/productos/${id}/hoja-seguridad.pdf`,
+}));
+// Productos genéricos (sin ficha propia): nivel para el ranking
+Object.assign(PROD.clorotalonil, { nivel: "leve" });
+Object.assign(PROD.azoxistrobina, { nivel: "medio" });
+Object.assign(PROD.difenoconazol, { nivel: "medio" });
+
+/* ================= Utilidades ================= */
+const $ = (s) => document.querySelector(s);
+const fmt = (x, d = 2) => Number(x).toLocaleString("es-PE", { maximumFractionDigits: d });
+const soles = (x) => "S/ " + Number(x).toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const sub = (u) => (u === "kg" ? "g" : "mL");
+const envTxt = (c, u) => (c < 1 ? `${fmt(c * 1000, 0)} ${sub(u)}` : `${fmt(c)} ${u}`);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ICON_PDF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
+const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>';
+const ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+
+// Ilustración del envase: bolsa para polvos, frasco para líquidos
+function envase(p) {
+  if (p.img) return `<img class="prod-img" src="${p.img}" alt="${esc(p.nombre)}" loading="lazy">`;
+  const fs = Math.min(10.5, 66 / (p.corto.length * 0.62));
+  const txt = `
+    <rect x="30" y="58" width="60" height="44" rx="5" fill="#fff"/>
+    <text x="60" y="76" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="${fs.toFixed(1)}" fill="#17231b">${esc(p.corto)}</text>
+    <text x="60" y="89" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="600" font-size="7.5" fill="#5a6b5f">${esc(p.conc)}</text>
+    <rect x="30" y="94" width="60" height="8" rx="0" fill="${p.color}" opacity=".25"/>
+    <text x="60" y="122" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="800" font-size="10" fill="#fff">${esc(envTxt(p.env, p.u))}</text>`;
+  if (p.u === "kg") {
+    return `<svg viewBox="0 0 120 140" aria-hidden="true">
+      <ellipse cx="60" cy="134" rx="40" ry="4" fill="#000" opacity=".12"/>
+      <path d="M24 26 L96 26 L100 120 Q100 132 88 132 L32 132 Q20 132 20 120 Z" fill="${p.color}"/>
+      <path d="M24 26 L96 26 L97 40 L23 40 Z" fill="#000" opacity=".15"/>
+      <rect x="22" y="14" width="76" height="14" rx="3" fill="${p.color}"/>
+      <path d="M26 21h68" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <path d="M30 44 Q26 90 30 126" stroke="#fff" stroke-opacity=".18" stroke-width="5" fill="none" stroke-linecap="round"/>
+      ${txt}</svg>`;
+  }
+  return `<svg viewBox="0 0 120 140" aria-hidden="true">
+    <ellipse cx="60" cy="134" rx="38" ry="4" fill="#000" opacity=".12"/>
+    <rect x="47" y="8" width="26" height="12" rx="3" fill="#2a2f2b"/>
+    <rect x="51" y="19" width="18" height="10" fill="${p.color}"/>
+    <path d="M51 28 Q26 32 24 50 L24 120 Q24 132 36 132 L84 132 Q96 132 96 120 L96 50 Q94 32 69 28 Z" fill="${p.color}"/>
+    <path d="M32 50 L32 124" stroke="#fff" stroke-opacity=".22" stroke-width="5" stroke-linecap="round"/>
+    ${txt}</svg>`;
+}
+
+/* ================= Pestañas ================= */
+const VISTAS = ["diagnostico", "calculadora", "enfermedades"];
+function irA(v, scroll = true) {
+  if (!VISTAS.includes(v)) v = "diagnostico";
+  VISTAS.forEach((x) => {
+    $("#v-" + x).hidden = x !== v;
+  });
+  if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => irA(b.dataset.tab)));
+
+
+/* ================= Diagnóstico ================= */
+const lienzo = $("#lienzo");
+const ctx = lienzo.getContext("2d", { willReadFrequently: true });
+let ejemploN = 0;
+
+function dibujarHojaEjemplo(tipo) {
+  const W = lienzo.width, H = lienzo.height;
+  ctx.fillStyle = "#e9ede4"; ctx.fillRect(0, 0, W, H);
+  const hoja = new Path2D();
+  hoja.moveTo(W * 0.5, H * 0.08);
+  hoja.bezierCurveTo(W * 0.95, H * 0.25, W * 0.9, H * 0.75, W * 0.5, H * 0.92);
+  hoja.bezierCurveTo(W * 0.1, H * 0.75, W * 0.05, H * 0.25, W * 0.5, H * 0.08);
+  ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(-0.35); ctx.translate(-W / 2, -H / 2);
+  const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#4f9a3e"); g.addColorStop(1, "#2f7432");
+  ctx.fillStyle = g; ctx.fill(hoja);
+  ctx.save(); ctx.clip(hoja);
+  ctx.strokeStyle = "rgba(200,235,170,.55)"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.1); ctx.lineTo(W * 0.5, H * 0.9); ctx.stroke();
+  ctx.lineWidth = 1.6;
+  for (let i = 0; i < 6; i++) {
+    const y = H * (0.22 + i * 0.11);
+    ctx.beginPath(); ctx.moveTo(W * 0.5, y); ctx.quadraticCurveTo(W * 0.62, y - 20, W * 0.82, y - 40); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W * 0.5, y); ctx.quadraticCurveTo(W * 0.38, y - 20, W * 0.18, y - 40); ctx.stroke();
+  }
+  const manchas = [[0.36, 0.42, 30], [0.62, 0.55, 38], [0.42, 0.7, 26], [0.6, 0.3, 22], [0.33, 0.58, 18]];
+  if (tipo === "tizon_temprano") {
+    manchas.forEach(([x, y, r]) => {
+      ctx.fillStyle = "rgba(205,190,70,.85)"; ctx.beginPath(); ctx.arc(W * x, H * y, r * 1.35, 0, 7); ctx.fill();
+      ctx.fillStyle = "#7a4c22"; ctx.beginPath(); ctx.arc(W * x, H * y, r, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#5c3a1b"; ctx.lineWidth = 2;
+      for (let k = 0.35; k < 1; k += 0.3) { ctx.beginPath(); ctx.arc(W * x, H * y, r * k, 0, 7); ctx.stroke(); }
+    });
+  } else if (tipo === "tizon_tardio") {
+    [[0.62, 0.35, 60], [0.38, 0.66, 52], [0.3, 0.3, 30]].forEach(([x, y, r]) => {
+      ctx.fillStyle = "#1e2a17"; ctx.beginPath();
+      ctx.ellipse(W * x, H * y, r * 1.2, r * 0.9, 0.6, 0, 7); ctx.fill();
+      ctx.fillStyle = "rgba(60,75,40,.7)"; ctx.beginPath(); ctx.ellipse(W * x, H * y, r * 1.45, r * 1.1, 0.6, 0, 7); ctx.fill();
+      ctx.fillStyle = "#18210f"; ctx.beginPath(); ctx.ellipse(W * x, H * y, r, r * 0.75, 0.6, 0, 7); ctx.fill();
+    });
+  }
+  ctx.restore(); ctx.restore();
+}
+
+function rgb2hsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0;
+  if (d) {
+    if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+    h *= 60; if (h < 0) h += 360;
+  }
+  return [h, mx ? d / mx : 0, mx];
+}
+
+// Estimación por color de la hoja (versión de prueba del modelo)
+function analizar() {
+  const c = document.createElement("canvas"); c.width = c.height = 224;
+  const cx = c.getContext("2d"); cx.drawImage(lienzo, 0, 0, 224, 224);
+  const px = cx.getImageData(0, 0, 224, 224).data;
+  let hoja = 0, verde = 0, marron = 0, oscuro = 0;
+  for (let i = 0; i < px.length; i += 4) {
+    const [h, s, v] = rgb2hsv(px[i], px[i + 1], px[i + 2]);
+    if (s > 0.15 && v > 0.15) {
+      hoja++;
+      if (h >= 60 && h <= 170) verde++;
+      if (h >= 10 && h < 50 && v > 0.25) marron++;
+    }
+    if (v <= 0.3 && s > 0.15) oscuro++;
+  }
+  hoja = Math.max(hoja, 1);
+  verde /= hoja; marron /= hoja; oscuro /= hoja;
+  const pts = { tizon_temprano: 10 * marron, tizon_tardio: 10 * oscuro, sana: verde * Math.max(0, 1 - 15 * (marron + oscuro)) };
+  let tot = 0; for (const k in pts) { pts[k] = Math.exp(pts[k] * 3); tot += pts[k]; }
+  for (const k in pts) pts[k] /= tot;
+  return pts;
+}
+
+function mostrarDiagnostico(esEjemplo, probsServidor) {
+  const probs = probsServidor || analizar();
+  const clase = Object.keys(probs).reduce((a, b) => (probs[a] > probs[b] ? a : b));
+  const e = ENF[clase];
+  const prods = e.productos.map((id) => {
+    const p = PROD[id];
+    return `<div class="mini">${envase(p)}<span><b>${esc(p.nombre)}</b></span></div>`;
+  }).join("");
+  $("#verdict").innerHTML = `
+    <div class="verdict">
+      <div>
+        <p class="eyebrow">Resultado</p>
+        <h2>${e.nombre}${e.agente ? ` <i class="cient">${e.agente}</i>` : ""}</h2>
+      </div>
+      <div class="conf"><b class="num">${(probs[clase] * 100).toFixed(0)}%</b><small>seguridad</small></div>
+    </div>`;
+  q.clase = clase;
+  q.maxApl = Math.max(...e.productos.map((id) => PROD[id].max));
+  calcularRapido();
+}
+
+/* ---- Cálculo rápido dentro del resultado ---- */
+const q = { modo: "total", apl: 3, maxApl: 6 };
+
+function calcularRapido() {
+  q.apl = Math.min(Math.max(1, q.apl), q.maxApl);
+  $("#q-apl").textContent = `${q.apl} ${q.apl === 1 ? "aplicación" : "aplicaciones"}`;
+  $("#q-menos").disabled = q.apl <= 1;
+  $("#q-mas").disabled = q.apl >= q.maxApl;
+
+}
+
+$("#q-modo").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-modo]"); if (!b) return;
+  q.modo = b.dataset.modo;
+  document.querySelectorAll("#q-modo .chip").forEach((c) => c.setAttribute("aria-pressed", String(c === b)));
+  $("#q-total").hidden = q.modo !== "total";
+  $("#q-lados").hidden = q.modo !== "lados";
+  calcularRapido();
+});
+["#q-area", "#q-largo", "#q-ancho", "#q-presu"].forEach((id) => $(id).addEventListener("input", calcularRapido));
+$("#q-menos").addEventListener("click", () => { q.apl = Math.max(1, q.apl - 1); calcularRapido(); });
+$("#q-mas").addEventListener("click", () => { q.apl = Math.min(q.maxApl, q.apl + 1); calcularRapido(); });
+$("#qcalc").addEventListener("submit", (e) => e.preventDefault());
+
+$("#diag-res").addEventListener("click", (ev) => {
+  const ver = ev.target.closest("#ver-prods");
+  if (ver) {
+    // Abre la calculadora con la enfermedad detectada y los datos ya escritos
+    estado.enf = q.clase;
+    estado.producto = ENF[q.clase].productos[0];
+    estado.manual = false;
+    estado.aplDeseado = q.apl;
+    estado.dosis = { poco: "minima", medio: "media", mucho: "maxima" }[datos.avance] || "media";
+    $("#c-tanque").value = parseFloat($("#q-mochila").value) > 0 ? $("#q-mochila").value : 20;
+    $("#c-area").value = $("#q-area").value;
+    $("#c-largo").value = $("#q-largo").value;
+    $("#c-ancho").value = $("#q-ancho").value;
+    const modoBtn = document.querySelector(`#c-modo [data-modo="${q.modo}"]`);
+    if (modoBtn) modoBtn.click();
+    pintarCalc();
+    irA("calculadora");
+    cargarClima();
+    return;
+  }
+});
+
+function cargarFoto(f) {
+  if (!f || !f.type.startsWith("image/")) return;
+  const img = new Image();
+  img.onload = () => {
+    const W = lienzo.width, H = lienzo.height, s = Math.max(W / img.width, H / img.height);
+    ctx.fillStyle = "#e9ede4"; ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, (W - img.width * s) / 2, (H - img.height * s) / 2, img.width * s, img.height * s);
+    URL.revokeObjectURL(img.src);
+    diagnosticarEnServidor(f);
+  };
+  img.src = URL.createObjectURL(f);
+}
+// Envía la foto a /api/diagnosticar (modelo de IA del backend). Sin servidor, usa la estimación por color.
+async function diagnosticarEnServidor(f) {
+  try {
+    const fd = new FormData();
+    fd.append("foto", f);
+    const r = await fetch("/api/diagnosticar?cultivo=papa", { method: "POST", body: fd });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    mostrarDiagnostico(false, d.probabilidades);
+  } catch (e) {
+    mostrarDiagnostico(false);
+  }
+}
+$("#btn-volver").addEventListener("click", () => irA("diagnostico"));
+$("#btn-subir").addEventListener("click", () => $("#foto").click());
+$("#foto").addEventListener("change", (e) => cargarFoto(e.target.files[0]));
+const drop = $("#drop");
+["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => cargarFoto(e.dataTransfer.files[0]));
+
+/* ================= Calculadora ================= */
+const estado = { enf: "tizon_temprano", producto: "mancozeb", modo: "total", dosis: "media", apl: null, precios: {} };
+
+/* ---- Elegir el mejor producto con todos los datos de la sección 1 ---- */
+function costoProducto(id, m2) {
+  const p = PROD[id];
+  const dosisHa = { minima: p.dmin, maxima: p.dmax }[estado.dosis] ?? (p.dmin + p.dmax) / 2;
+  const n = Math.min(estado.aplDeseado ?? p.max, p.max);
+  const total = (dosisHa / 10) * m2 * n / 1000;
+  return Math.ceil(total / p.env - 1e-9) * precioDe(id);
+}
+function rankear() {
+  const e = ENF[estado.enf];
+  const m2 = areaM2() || 1000;
+  const presu = parseFloat($("#q-presu").value);
+  const DIAS_U = { dias: 1, semanas: 7, meses: 30 };
+  const cos = parseFloat($("#q-cosecha").value);
+  const diasCosecha = cos > 0 ? Math.round(cos * DIAS_U[$("#q-cosecha-u").value]) : null;
+  const riesgo = estado.clima?.riesgo?.[estado.enf] || null;
+  const lluviosas = estado.clima ? estado.clima.horas.filter((h) => (h.lluvia_prob || 0) >= 50).length : 0;
+  const lluviaAlta = lluviosas >= 6;
+  const avance = datos.avance;
+  // Nivel que necesita la chacra: lo que eligió el agricultor o, si no eligió, el riesgo del clima
+  const NIVEL_AVANCE = { poco: "leve", medio: "medio", mucho: "grave" };
+  const NIVEL_RIESGO = { bajo: "leve", medio: "medio", alto: "grave" };
+  const necesita = NIVEL_AVANCE[avance] || NIVEL_RIESGO[riesgo?.nivel] || null;
+  const ORDEN = { leve: 0, medio: 1, grave: 2 };
+  // Etapa del cultivo (reglas provisionales, a validar con un agrónomo)
+  const plant = parseFloat($("#q-plantado").value);
+  const diasPlantado = plant > 0 ? Math.round(plant * DIAS_U[$("#q-plantado-u").value]) : null;
+  const ETAPA = { brotando: 21, inicial: 35, joven: 50 }; // días desde la siembra
+  const curar = avance === "mucho" || avance === "medio" || riesgo?.nivel === "alto";
+  const motivoCurar = avance === "mucho" ? "la enfermedad está muy avanzada" : avance === "medio" ? "ya hay varias hojas con manchas" : `el clima de tu zona favorece la ${e.corto.toLowerCase()}`;
+  const usados = [...datos.usados].filter((id) => PROD[id]);
+  const fracUsado = {};
+  usados.forEach((id) => PROD[id].frac.filter((f) => !f.startsWith("M")).forEach((f) => { (fracUsado[f] = fracUsado[f] || []).push(PROD[id].nombre); }));
+  const costos = Object.fromEntries(e.productos.map((id) => [id, costoProducto(id, m2)]));
+  const minimo = Math.min(...Object.values(costos));
+
+  const lista = e.productos.map((id) => {
+    const p = PROD[id], pros = [], contras = [];
+    let puntos = 50, descarte = null;
+    // Filtros que descartan
+    const repetidos = p.frac.filter((f) => fracUsado[f]);
+    if (repetidos.length) {
+      const nombres = [...new Set(repetidos.flatMap((f) => fracUsado[f]))].join(", ");
+      descarte = usados.includes(id)
+        ? "Ya lo usaste en esta campaña: alterna con otro tipo de producto para que la enfermedad no se vuelva resistente."
+        : `Tiene un ingrediente del mismo grupo que ${nombres}, que ya usaste: alterna para evitar resistencia.`;
+    }
+    if (!descarte && diasCosecha != null && p.carencia > diasCosecha) {
+      descarte = `Hay que esperar ${p.carencia} días entre la última aplicación y la cosecha, y tú cosechas en ${diasCosecha} días.`;
+    }
+    // Fuerza del producto frente a lo que necesita la chacra
+    if (necesita && p.nivel) {
+      const dif = ORDEN[p.nivel] - ORDEN[necesita];
+      if (dif === 0) { puntos += 30; pros.push(`Es de nivel ${p.nivel}, justo para ${avance ? "el avance de tu enfermedad" : "el riesgo de tu zona"}`); }
+      else if (dif === 1) { puntos += 5; contras.push("Es más fuerte de lo que necesitas"); }
+      else if (dif === 2) { puntos -= 15; contras.push("Es un producto fuerte: con poco avance basta uno más suave y barato"); }
+      else if (dif === -1) { puntos += 5; contras.push("Puede quedarse corto para tu nivel de enfermedad"); }
+      else { puntos -= 25; contras.push("Es para ataques leves: tu cultivo necesita algo más fuerte"); }
+    }
+    // Etapa del cultivo
+    if (diasPlantado != null && p.nivel) {
+      if (diasPlantado < ETAPA.brotando) {
+        puntos -= 5; contras.push(`Tus plantas tienen ${diasPlantado} días: si aún no tienen hojas, espera a que midan 10 a 15 cm`);
+      }
+      if (diasPlantado < ETAPA.inicial && p.nivel === "grave" && !descarte) {
+        descarte = `Es muy fuerte para plantas de ${diasPlantado} días: en la etapa inicial usa un producto leve o medio.`;
+      } else if (diasPlantado < ETAPA.inicial && p.nivel === "medio") {
+        puntos -= 10; contras.push("Úsalo con cuidado: tus plantas aún son jóvenes");
+      } else if (diasPlantado < ETAPA.joven && p.nivel === "grave") {
+        puntos -= 10; contras.push("Úsalo con cuidado: tus plantas aún son jóvenes");
+      } else if (diasPlantado < ETAPA.inicial && p.nivel === "leve") {
+        puntos += 10; pros.push("Suave para plantas jóvenes");
+      }
+    }
+    // Lo que necesita la chacra
+    if (curar) {
+      if (p.cura) { puntos += 25; pros.push(`Cura infecciones recientes: lo necesitas porque ${motivoCurar}`); }
+      else { puntos -= 10; contras.push("Solo previene: no cura lo que ya está infectado"); }
+    } else if (p.cura) { puntos += 5; pros.push("Previene y cura"); }
+    else { puntos += 15; pros.push("Previene bien y es suficiente con poco avance o poco riesgo"); }
+    // Lluvia del pronóstico
+    if (lluviaAlta) {
+      if (p.lluvia === "alta") { puntos += 15; pros.push("Resiste la lluvia pronosticada para estos días"); }
+      else if (p.lluvia === "baja") { puntos -= 10; contras.push("La lluvia de estos días puede lavarlo"); }
+    }
+    // Costo frente al presupuesto
+    const c = costos[id];
+    if (presu > 0) {
+      if (c <= presu) { puntos += 15 + 10 * (minimo / c); pros.push(`Te alcanza: cuesta ${soles(c)} y tu presupuesto es ${soles(presu)}`); }
+      else { puntos -= 25; contras.push(`Cuesta ${soles(c)}: supera tu presupuesto de ${soles(presu)}`); }
+    } else { puntos += 15 * (minimo / c); }
+    if ((estado.aplDeseado ?? 0) > p.max) { puntos -= 5; contras.push(`Solo se puede aplicar ${p.max} ${p.max === 1 ? "vez" : "veces"} por cosecha`); }
+    return { id, puntos, pros, contras, descarte, costo: c };
+  });
+  lista.sort((a, b) => (!!a.descarte - !!b.descarte) || (b.puntos - a.puntos));
+  return { lista, riesgo };
+}
+
+function pintarCalc() {
+  const e = ENF[estado.enf];
+  const rk = rankear();
+  estado.ranking = rk;
+  if (!estado.manual || !e.productos.includes(estado.producto)) estado.producto = rk.lista[0].id;
+  const p = PROD[estado.producto];
+
+  $("#c-enf").innerHTML = Object.entries(ENF).map(([k, v]) =>
+    `<button class="chip" type="button" data-enf="${k}" aria-pressed="${k === estado.enf}">${v.corto}</button>`).join("");
+  $("#c-prods").innerHTML = rk.lista.map((r, i) => {
+    const q = PROD[r.id];
+    const tag = r.descarte ? `<small class="tag-no">No recomendado</small>` : i === 0 ? `<small class="tag-mejor">Mejor opción</small>` : "";
+    return `<button class="prod${r.descarte ? " descartado" : ""}" type="button" data-prod="${r.id}" aria-pressed="${r.id === estado.producto}">
+      ${envase(q)}<b>${esc(q.nombre)}</b>${tag}</button>`;
+  }).join("");
+
+  const niveles = [["minima", "Baja", p.dmin], ["media", "Media", (p.dmin + p.dmax) / 2], ["maxima", "Alta", p.dmax]];
+  $("#c-dosis").innerHTML = niveles.map(([k, t, d]) =>
+    `<button type="button" data-dosis="${k}" aria-pressed="${k === estado.dosis}"><b>${t}</b><small class="num">${fmt(d / 10, 3)} ${sub(p.u)}/m²</small></button>`).join("");
+
+  estado.apl = Math.min(estado.aplDeseado ?? p.max, p.max);
+  $("#apl-max").textContent = `Máx. ${p.max} por cosecha`;
+  $("#precio-env").textContent = `por envase de ${envTxt(p.env, p.u)}`;
+  $("#c-precio").value = precioDe(estado.producto);
+  calcular();
+}
+const precioDe = (id) => (estado.precios[id] ?? PROD[id].precio);
+
+$("#c-enf").addEventListener("click", (ev) => { const b = ev.target.closest("[data-enf]"); if (b) { estado.enf = b.dataset.enf; estado.apl = null; pintarCalc(); } });
+$("#c-prods").addEventListener("click", (ev) => { const b = ev.target.closest("[data-prod]"); if (b) { estado.producto = b.dataset.prod; estado.manual = true; estado.apl = null; pintarCalc(); } });
+$("#c-dosis").addEventListener("click", (ev) => { const b = ev.target.closest("[data-dosis]"); if (b) { estado.dosis = b.dataset.dosis; pintarCalc(); } });
+$("#c-modo").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-modo]"); if (!b) return;
+  estado.modo = b.dataset.modo;
+  document.querySelectorAll("#c-modo .chip").forEach((c) => c.setAttribute("aria-pressed", String(c === b)));
+  $("#area-total").hidden = estado.modo !== "total";
+  $("#area-lados").hidden = estado.modo !== "lados";
+  calcular();
+});
+const TANQUES = [15, 16, 20, 25];
+$("#c-tanques").innerHTML = TANQUES.map((t) => `<button class="chip" type="button" data-t="${t}">${t} L</button>`).join("");
+$("#c-tanques").addEventListener("click", (ev) => { const b = ev.target.closest("[data-t]"); if (b) { $("#c-tanque").value = b.dataset.t; calcular(); } });
+$("#apl-menos").addEventListener("click", () => { estado.apl = Math.max(1, estado.apl - 1); calcular(); });
+$("#apl-mas").addEventListener("click", () => { estado.apl = Math.min(PROD[estado.producto].max, estado.apl + 1); calcular(); });
+$("#c-precio").addEventListener("input", (e) => {
+  const v = parseFloat(e.target.value);
+  if (v >= 0) estado.precios[estado.producto] = v; else delete estado.precios[estado.producto];
+  const card = document.querySelector(`[data-prod="${estado.producto}"] .price`);
+  if (card) card.textContent = soles(precioDe(estado.producto));
+  calcular();
+});
+["#c-area", "#c-largo", "#c-ancho", "#c-tanque"].forEach((s) => $(s).addEventListener("input", calcular));
+
+function areaM2() {
+  if (estado.modo === "lados") return (parseFloat($("#c-largo").value) || 0) * (parseFloat($("#c-ancho").value) || 0);
+  return parseFloat($("#c-area").value) || 0;
+}
+
+function razonesHTML(id) {
+  const r = estado.ranking?.lista.find((x) => x.id === id);
+  if (!r) return "";
+  if (r.descarte) return `<ul class="razones"><li class="no">${ICON_X}<span><b>No recomendado.</b> ${esc(r.descarte)}</span></li></ul>`;
+  return `<ul class="razones">${r.pros.map((t) => `<li class="si">${ICON_OK}<span>${esc(t)}</span></li>`).join("")}${r.contras.map((t) => `<li class="no">${ICON_X}<span>${esc(t)}</span></li>`).join("")}</ul>`;
+}
+
+function calcular() {
+  const p = PROD[estado.producto];
+  const m2 = areaM2();
+  const tanque = parseFloat($("#c-tanque").value) || 0;
+  const n = estado.apl;
+  const precio = precioDe(estado.producto);
+
+  document.querySelectorAll("#c-tanques .chip").forEach((c) => c.setAttribute("aria-pressed", String(+c.dataset.t === tanque)));
+  $("#apl-val").textContent = `${n} ${n === 1 ? "aplicación" : "aplicaciones"}`;
+  $("#apl-menos").disabled = n <= 1;
+  $("#apl-mas").disabled = n >= p.max;
+  $("#area-hint").innerHTML = m2 > 0
+    ? `Tu chacra mide <b class="num">${fmt(m2, 1)} m²</b>` + (estado.modo === "lados" ? "" : "")
+    : "Escribe las medidas de tu chacra.";
+
+  if (!(m2 > 0) || !(tanque > 0)) {
+    $("#receipt").innerHTML = `<div class="hero-num"><p>Escribe el área de tu chacra y la capacidad de tu mochila para ver el resultado.</p></div>`;
+    return;
+  }
+
+  const dosisHa = { minima: p.dmin, maxima: p.dmax }[estado.dosis] ?? (p.dmin + p.dmax) / 2;
+  const dosisM2 = dosisHa / 10;                 // g o mL por m²
+  const mezclaM2 = p.agua / 10;                 // mL de mezcla por m² (L/ha ÷ 10 000 × 1000)
+  const aguaApl = (p.agua * m2) / 10000;        // L por aplicación
+  const prodApl = dosisM2 * m2;                 // g o mL por aplicación
+  const porTanque = (dosisHa / p.agua) * tanque * 1000; // g o mL por mochila llena
+  const mochilas = Math.ceil(aguaApl / tanque - 1e-9);
+  const llenas = Math.floor(aguaApl / tanque + 1e-9);
+  const resto = aguaApl - llenas * tanque;
+  const totalProd = (prodApl * n) / 1000;       // kg o L
+  const envases = Math.ceil(totalProd / p.env - 1e-9);
+  const costoTotal = envases * precio;
+  const costoApl = (prodApl / 1000 / p.env) * precio;
+  const s = sub(p.u);
+
+  const porResto = (dosisHa / p.agua) * resto * 1000;
+  const verbo = p.u === "kg" ? "Pesa" : "Mide";
+  const herramienta = p.u === "kg" ? "en una balanza" : "con una jeringa o vaso medidor";
+  const mochilasTxt = resto > 0.05 && llenas > 0
+    ? `${llenas} ${llenas === 1 ? "mochila llena" : "mochilas llenas"} y 1 más con ${fmt(resto, 1)} L de agua y ${fmt(porResto, 0)} ${s} de producto`
+    : llenas === 0
+      ? `1 mochila con solo ${fmt(resto, 1)} L de agua y ${fmt(prodApl, 1)} ${s} de producto`
+      : `${llenas} ${llenas === 1 ? "mochila llena" : "mochilas llenas"}`;
+
+  // Presupuesto de la primera sección
+  const presu = parseFloat($("#q-presu").value);
+  let presuTxt = "";
+  if (presu > 0) {
+    presuTxt = presu >= costoTotal
+      ? `<p class="ok-txt">Con tu presupuesto de ${soles(presu)} te sobran <b>${soles(presu - costoTotal)}</b>.</p>`
+      : `<p class="bad-txt">Tu presupuesto es ${soles(presu)}: te faltan <b>${soles(costoTotal - presu)}</b>.</p>`;
+  }
+
+  // Calendario con fechas reales desde hoy
+  const DIAS_U = { dias: 1, semanas: 7, meses: 30 };
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const fecha = (d) => { const f = new Date(hoy); f.setDate(f.getDate() + d); return f.toLocaleDateString("es-PE", { weekday: "short", day: "numeric", month: "short" }); };
+  const cosechaN = parseFloat($("#q-cosecha").value);
+  const diasCosecha = cosechaN > 0 ? Math.round(cosechaN * DIAS_U[$("#q-cosecha-u").value]) : null;
+  const ini = estado.ventana ? diasDesdeHoy(estado.ventana.fecha) : 0;
+  const items = Array.from({ length: n }, (_, i) => `<div><small>Aplicación ${i + 1}</small><b>${fecha(ini + i * p.int)}</b>${i === 0 && estado.ventana ? `<small>${estado.ventana.desde}–${estado.ventana.hasta}</small>` : ""}</div>`);
+  if (diasCosecha != null) items.push(`<div class="harvest"><small>Cosecha</small><b>${fecha(diasCosecha)}</b></div>`);
+  let avisos = "";
+  if ((estado.aplDeseado ?? n) > p.max) {
+    avisos += `<p class="bad-txt">Este producto se puede usar como máximo ${p.max} ${p.max === 1 ? "vez" : "veces"} por cosecha, así que el cálculo usa ${p.max}.</p>`;
+  }
+  if (diasCosecha != null && diasCosecha - (n - 1) * p.int < p.carencia) {
+    const k = Math.max(0, Math.floor((diasCosecha - p.carencia) / p.int) + 1);
+    avisos += `<p class="bad-txt">Debes dejar de aplicar ${p.carencia} días antes de cosechar. ${k > 0
+      ? `Con tu fecha de cosecha solo puedes hacer ${k} ${k === 1 ? "aplicación" : "aplicaciones"}.`
+      : "Con tu fecha de cosecha ya no deberías aplicar este producto."}</p>`;
+  }
+
+  $("#receipt").innerHTML = `
+    <div class="r-head">${envase(p)}<div><h2>${esc(p.nombre)}</h2><p class="num">Envase de ${envTxt(p.env, p.u)} · <b>${soles(precio)}</b>${p.precioEst && estado.precios[estado.producto] == null ? " aprox." : ""}</p>
+      ${razonesHTML(estado.producto)}
+      ${p.ficha || p.hoja ? `<div class="docs">
+        ${p.ficha ? `<a class="doc" href="${p.ficha}" target="_blank" rel="noopener">${ICON_PDF}Ficha técnica</a>` : ""}
+        ${p.hoja ? `<a class="doc" href="${p.hoja}" target="_blank" rel="noopener">${ICON_PDF}Hoja de seguridad</a>` : ""}
+      </div>` : ""}</div></div>
+    <div class="r-blocks">
+      <section class="r-block">
+        <h3>Prepara tu mochila de ${fmt(tanque)} L</h3>
+        <ol class="steps">
+          <li><span>Ponte guantes, mascarilla, lentes y botas.</span></li>
+          <li><span>Llena la mochila hasta la mitad con agua limpia.</span></li>
+          <li><span>${verbo} <b class="num">${fmt(porTanque, porTanque < 10 ? 1 : 0)} ${s}</b> de producto ${herramienta}${p.u === "kg" ? " y disuélvelo en un balde con un poco de agua" : ""}.</span></li>
+          <li><span>Échalo a la mochila, completa con agua hasta <b class="num">${fmt(tanque)} L</b> y agita bien.</span></li>
+          <li><span>Para tus <b class="num">${fmt(m2, 1)} m²</b> necesitas <b class="num">${mochilasTxt}</b> en cada aplicación.</span></li>
+          <li><span>${p.modo} Aplica temprano o al atardecer, sin viento ni lluvia.</span></li>${estado.ventana ? `<li><span>Según el pronóstico, el mejor momento para la primera aplicación es <b>${diaTxt(estado.ventana.fecha)} de ${estado.ventana.desde} a ${estado.ventana.hasta}</b>.</span></li>` : ""}
+        </ol>
+      </section>
+      <section class="r-block">
+        <h3>Cuánto producto usar</h3>
+        <dl class="kv num">
+          <div><dt>En cada mochila</dt><dd>${fmt(porTanque, porTanque < 10 ? 1 : 0)} ${s}</dd></div>
+          <div><dt>En cada aplicación</dt><dd>${fmt(prodApl, prodApl < 10 ? 1 : 0)} ${s}</dd></div>
+          <div><dt>En ${n} ${n === 1 ? "aplicación" : "aplicaciones"}</dt><dd>${fmt(totalProd * 1000, 0)} ${s}</dd></div>
+        </dl>
+      </section>
+      <section class="r-block buy">
+        <h3>Qué comprar</h3>
+        <p class="buy-big num">${envases} ${envases === 1 ? "envase" : "envases"} de ${envTxt(p.env, p.u)}</p>
+        <dl class="kv num">
+          <div><dt>Precio por envase</dt><dd>${soles(precio)}</dd></div>
+          <div class="total"><dt>Costo total</dt><dd>${soles(costoTotal)}</dd></div>
+        </dl>
+      </section>
+    </div>
+    <section class="r-cal">
+      <h3>Calendario · cada ${p.int} días</h3>
+      <div class="cal num">${items.join("")}</div>
+      ${avisos}
+    </section>`;
+}
+
+
+/* ================= Clima para fumigar (Google Weather API vía /api/clima) ================= */
+const climaCache = {};
+const ESTADO_TXT = { ok: "Buen momento", aviso: "Con cuidado", no: "No fumigar" };
+function fechaLocal(iso) { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d); }
+function diasDesdeHoy(iso) { const h = new Date(); h.setHours(0, 0, 0, 0); return Math.round((fechaLocal(iso) - h) / 864e5); }
+function diaTxt(iso) {
+  const d = diasDesdeHoy(iso);
+  const f = fechaLocal(iso).toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "short" });
+  return d === 0 ? `hoy ${f}` : d === 1 ? `mañana ${f}` : f;
+}
+
+async function cargarClima() {
+  const dep = $("#q-depto").value.trim(), prov = $("#q-provincia").value.trim(), dist = $("#q-distrito").value.trim();
+  const caja = $("#clima");
+  estado.ventana = null;
+  estado.clima = null;
+  if (!dep || !(prov || dist)) {
+    caja.hidden = false;
+    caja.innerHTML = `<h3>¿Cuándo fumigar?</h3><p class="muted">Escribe tu departamento, provincia y distrito en la primera sección para ver el mejor momento según el clima.</p>`;
+    return;
+  }
+  const clave = [dep, prov, dist].join("|").toLowerCase();
+  caja.hidden = false;
+  caja.innerHTML = `<h3>¿Cuándo fumigar?</h3><p class="muted">Consultando el clima de ${esc(dist || prov)}…</p>`;
+  try {
+    if (!climaCache[clave]) {
+      const r = await fetch(`/api/clima?${new URLSearchParams({ departamento: dep, provincia: prov, distrito: dist })}`);
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.detail || "No pudimos consultar el clima.");
+      climaCache[clave] = d;
+    }
+    const d = climaCache[clave];
+    estado.ventana = d.ventanas[0] || null;
+    estado.clima = d;
+    pintarCalc();
+    pintarClima(d);
+  } catch (e) {
+    // Sin servidor (por ejemplo, en la vista previa) no se muestra el bloque
+    if (e instanceof TypeError) { caja.hidden = true; return; }
+    caja.innerHTML = `<h3>¿Cuándo fumigar?</h3><p class="muted">${esc(e.message)}</p>`;
+  }
+}
+
+function pintarClima(d) {
+  const v = d.ventanas;
+  const mejor = v[0];
+  // Motivos más frecuentes cuando no hay ventana buena
+  const conteo = {};
+  d.horas.filter((h) => h.estado === "no").forEach((h) => h.motivos.forEach((m) => {
+    const k = m.split(" (")[0]; conteo[k] = (conteo[k] || 0) + 1;
+  }));
+  const principales = Object.entries(conteo).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
+
+  const dias = {};
+  d.horas.forEach((h, i) => { (dias[h.fecha] = dias[h.fecha] || []).push({ ...h, i }); });
+  const filas = Object.entries(dias).map(([f, hs]) => `
+    <div class="cl-fila">
+      <span class="cl-dia">${diaTxt(f).replace(/^(\w)/, (c) => c.toUpperCase())}</span>
+      <div class="cl-horas">${hs.map((h) => `<button type="button" class="cl-h ${h.estado}" data-i="${h.i}" style="grid-column:${+h.hora.slice(0, 2) + 1}"
+        title="${h.hora} · ${ESTADO_TXT[h.estado]}${h.motivos.length ? ": " + esc(h.motivos.join("; ")) : ""}"><span>${h.hora.slice(0, 2)}</span></button>`).join("")}</div>
+    </div>`).join("");
+
+  $("#clima").innerHTML = `
+    <div class="cl-cab">
+      <div>
+        <h3>¿Cuándo fumigar?</h3>
+        <p class="muted cl-lugar">Pronóstico de los próximos 3 días para ${esc(d.lugar.lugar)}</p>
+        ${d.riesgo?.[estado.enf] ? `<p class="cl-riesgo ${d.riesgo[estado.enf].nivel}">Riesgo de ${esc(ENF[estado.enf].corto.toLowerCase())} en tu zona: <b>${d.riesgo[estado.enf].nivel}</b> · ${esc(d.riesgo[estado.enf].explicacion)}</p>` : ""}
+      </div>
+      <div class="cl-mejor ${mejor ? "ok" : "no"}">
+        ${mejor
+          ? `<small>Mejor momento</small><b>${diaTxt(mejor.fecha)}, de ${mejor.desde} a ${mejor.hasta}</b>`
+          : `<small>Sin buen momento en 3 días</small><b>${principales.length ? esc(principales.join(" · ")) : "Revisa el clima más adelante"}</b>`}
+      </div>
+    </div>
+    ${v.length > 1 ? `<div class="cl-otras"><small>Otros buenos momentos:</small>${v.slice(1, 5).map((w) => `<span>${diaTxt(w.fecha)} · ${w.desde}–${w.hasta}</span>`).join("")}</div>` : ""}
+    <div class="cl-tabla">${filas}</div>
+    <div class="cl-ley"><span class="ok"></span>Buen momento<span class="aviso"></span>Con cuidado<span class="no"></span>No fumigar<em>Toca una hora para ver el detalle</em></div>
+    <div class="cl-detalle" id="cl-detalle"></div>
+    <p class="cl-nota">En la sierra el clima cambia mucho entre quebradas y laderas, sobre todo el viento. Usa este pronóstico para planificar y, antes de fumigar, mide el viento en tu chacra con un anemómetro de bolsillo.</p>`;
+
+  const inicial = mejor ? d.horas.findIndex((h) => h.fecha === mejor.fecha && h.hora === mejor.desde) : 0;
+  detalleHora(d, Math.max(0, inicial));
+  $("#clima .cl-tabla").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-i]"); if (b) detalleHora(d, +b.dataset.i);
+  });
+}
+
+function detalleHora(d, i) {
+  const h = d.horas[i];
+  document.querySelectorAll("#clima .cl-h").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
+  const n = (x, u, dec = 0) => (x == null ? "—" : `${fmt(x, dec)} ${u}`);
+  const rocioCerca = h.temp != null && h.rocio != null && h.temp - h.rocio <= d.umbrales.rocio_delta;
+  $("#cl-detalle").innerHTML = `
+    <div class="cl-det-cab"><b>${diaTxt(h.fecha)}, ${h.hora}</b><span class="cl-tag ${h.estado}">${ESTADO_TXT[h.estado]}</span>${h.cielo ? `<span class="muted">${esc(h.cielo)}</span>` : ""}</div>
+    <div class="cl-factores num">
+      <div><small>Viento</small><b>${n(h.viento, "km/h")}</b><span>${h.rafaga != null ? `ráfagas ${fmt(h.rafaga, 0)} km/h` : ""}${h.dir ? ` · ${esc(String(h.dir).toLowerCase().replace(/_/g, " "))}` : ""}</span></div>
+      <div><small>Temperatura</small><b>${n(h.temp, "°C")}</b><span>rocío a ${n(h.rocio, "°C")}</span></div>
+      <div><small>Humedad</small><b>${n(h.hr, "%")}</b><span>${h.hr != null && h.hr < d.umbrales.hr_min ? "muy seco" : ""}</span></div>
+      <div><small>Lluvia</small><b>${n(h.lluvia_prob, "%")}</b><span>probabilidad${h.tormenta ? ` · tormenta ${fmt(h.tormenta, 0)} %` : ""}</span></div>
+      <div><small>Rocío / inversión</small><b>${rocioCerca ? "Hojas mojadas" : "—"}</b><span>nubes ${n(h.nubes, "%")}</span></div>
+    </div>
+    ${h.motivos.length ? `<ul class="cl-motivos">${h.motivos.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="cl-ok">Buenas condiciones para fumigar a esta hora.</p>`}`;
+}
+
+/* ================= Enfermedades ================= */
+$("#enfs").innerHTML = ["tizon_temprano", "tizon_tardio"].map((k) => {
+  const e = ENF[k];
+  return `<article class="panel enf">
+    <h2>${e.nombre}</h2><p class="agent">${e.agente}</p>
+    <dl>
+      <div><dt>Cómo se ve</dt><dd>${e.sintomas}</dd></div>
+      <div><dt>Cuándo aparece</dt><dd>${e.condiciones}</dd></div>
+      <div><dt>Qué hacer</dt><dd><ul class="checks" style="margin-top:6px">${e.manejo.map((m) => `<li>${ICON_OK}<span>${m}</span></li>`).join("")}</ul></dd></div>
+      <div><dt>Productos</dt><dd><div class="mini-prods" style="margin-top:6px">${e.productos.map((id) => `<button class="mini" type="button" data-calc="${id}" data-enf="${k}">${envase(PROD[id])}<span><b>${esc(PROD[id].nombre)}</b><small>Calcular dosis →</small></span></button>`).join("")}</div></dd></div>
+    </dl></article>`;
+}).join("");
+$("#enfs").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-calc]"); if (!b) return;
+  estado.enf = b.dataset.enf; estado.producto = b.dataset.calc; estado.apl = null;
+  pintarCalc(); irA("calculadora");
+});
+
+/* ---- Datos del agricultor para recomendar ---- */
+const datos = { avance: null, usados: new Set() };
+const AVANCES = [
+  ["poco", "Poco", "Unas pocas manchas en 1 o 2 hojas", 2],
+  ["medio", "Regular", "Varias hojas con manchas", 5],
+  ["mucho", "Mucho", "Casi toda la planta manchada o seca", 10]
+];
+function hojaIcono(n) {
+  const pts = [[30,22],[22,34],[38,36],[28,46],[40,24],[20,26],[34,48],[44,32],[26,30],[36,42]].slice(0, n);
+  return `<svg viewBox="0 0 60 60" aria-hidden="true">
+    <path d="M30 4 C52 14 52 44 30 56 C8 44 8 14 30 4 Z" fill="#4c9a3f"/>
+    <path d="M30 8 L30 54" stroke="#b9e2a3" stroke-width="1.5"/>
+    ${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${n > 6 ? 5 : 3.6}" fill="#7a4c22"/>`).join("")}</svg>`;
+}
+$("#q-avance").innerHTML = AVANCES.map(([k, t, d, n]) =>
+  `<button type="button" data-avance="${k}" aria-pressed="false">${hojaIcono(n)}<b>${t}</b><small>${d}</small></button>`).join("");
+$("#q-avance").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-avance]"); if (!b) return;
+  datos.avance = b.dataset.avance;
+  document.querySelectorAll("#q-avance button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+});
+$("#q-usados").innerHTML = Object.entries(PROD).map(([id, p]) =>
+  `<button class="chip sm" type="button" data-usado="${id}" aria-pressed="false">${esc(p.nombre)}</button>`).join("");
+const sinTildes = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+// Sin texto solo se ve la barra (y los ya marcados); al escribir aparecen las coincidencias
+function filtrarUsados() {
+  const t = sinTildes($("#q-buscar").value.trim());
+  document.querySelectorAll("#q-usados [data-usado]").forEach((b) => {
+    const marcado = datos.usados.has(b.dataset.usado);
+    b.hidden = !marcado && (t === "" || !sinTildes(b.textContent).includes(t));
+  });
+}
+$("#q-buscar").addEventListener("input", filtrarUsados);
+$("#q-usados").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-usado]"); if (!b) return;
+  const id = b.dataset.usado;
+  datos.usados.has(id) ? datos.usados.delete(id) : datos.usados.add(id);
+  b.setAttribute("aria-pressed", String(datos.usados.has(id)));
+  filtrarUsados();
+});
+filtrarUsados();
+
+/* ---- Ubigeo del Perú (INEI): departamento > provincia > distrito ---- */
+const UBIGEO = {"Amazonas":{"Chachapoyas":["Chachapoyas","Asunción","Balsas","Cheto","Chiliquin","Chuquibamba","Granada","Huancas","La Jalca","Leimebamba","Levanto","Magdalena","Mariscal Castilla","Molinopampa","Montevideo","Olleros","Quinjalca","San Francisco de Daguas","San Isidro de Maino","Soloco","Sonche"],"Bagua":["Bagua","Aramango","Copallin","El Parco","Imaza","La Peca"],"Bongará":["Jumbilla","Chisquilla","Churuja","Corosha","Cuispes","Florida","Jazan","Recta","San Carlos","Shipasbamba","Valera","Yambrasbamba"],"Condorcanqui":["Nieva","El Cenepa","Río Santiago"],"Luya":["Lamud","Camporredondo","Cocabamba","Colcamar","Conila","Inguilpata","Longuita","Lonya Chico","Luya","Luya Viejo","María","Ocalli","Ocumal","Pisuquia","Providencia","San Cristóbal","San Francisco de Yeso","San Jerónimo","San Juan de Lopecancha","Santa Catalina","Santo Tomas","Tingo","Trita"],"Rodríguez de Mendoza":["San Nicolás","Chirimoto","Cochamal","Huambo","Limabamba","Longar","Mariscal Benavides","Milpuc","Omia","Santa Rosa","Totora","Vista Alegre"],"Utcubamba":["Bagua Grande","Cajaruro","Cumba","El Milagro","Jamalca","Lonya Grande","Yamon"]},"Áncash":{"Huaraz":["Huaraz","Cochabamba","Colcabamba","Huanchay","Independencia","Jangas","La Libertad","Olleros","Pampas Grande","Pariacoto","Pira","Tarica"],"Aija":["Aija","Coris","Huacllan","La Merced","Succha"],"Antonio Raymondi":["Llamellin","Aczo","Chaccho","Chingas","Mirgas","San Juan de Rontoy"],"Asunción":["Chacas","Acochaca"],"Bolognesi":["Chiquian","Abelardo Pardo Lezameta","Antonio Raymondi","Aquia","Cajacay","Canis","Colquioc","Huallanca","Huasta","Huayllacayan","La Primavera","Mangas","Pacllon","San Miguel de Corpanqui","Ticllos"],"Carhuaz":["Carhuaz","Acopampa","Amashca","Anta","Ataquero","Marcara","Pariahuanca","San Miguel de Aco","Shilla","Tinco","Yungar"],"Carlos Fermín Fitzcarrald":["San Luis","San Nicolás","Yauya"],"Casma":["Casma","Buena Vista Alta","Comandante Noel","Yautan"],"Corongo":["Corongo","Aco","Bambas","Cusca","La Pampa","Yanac","Yupan"],"Huari":["Huari","Anra","Cajay","Chavin de Huantar","Huacachi","Huacchis","Huachis","Huantar","Masin","Paucas","Ponto","Rahuapampa","Rapayan","San Marcos","San Pedro de Chana","Uco"],"Huarmey":["Huarmey","Cochapeti","Culebras","Huayan","Malvas"],"Huaylas":["Caraz","Huallanca","Huata","Huaylas","Mato","Pamparomas","Pueblo Libre","Santa Cruz","Santo Toribio","Yuracmarca"],"Mariscal Luzuriaga":["Piscobamba","Casca","Eleazar Guzmán Barron","Fidel Olivas Escudero","Llama","Llumpa","Lucma","Musga"],"Ocros":["Ocros","Acas","Cajamarquilla","Carhuapampa","Cochas","Congas","Llipa","San Cristóbal de Rajan","San Pedro","Santiago de Chilcas"],"Pallasca":["Cabana","Bolognesi","Conchucos","Huacaschuque","Huandoval","Lacabamba","Llapo","Pallasca","Pampas","Santa Rosa","Tauca"],"Pomabamba":["Pomabamba","Huayllan","Parobamba","Quinuabamba"],"Recuay":["Recuay","Catac","Cotaparaco","Huayllapampa","Llacllin","Marca","Pampas Chico","Pararin","Tapacocha","Ticapampa"],"Santa":["Chimbote","Cáceres del Perú","Coishco","Macate","Moro","Nepeña","Samanco","Santa","Nuevo Chimbote"],"Sihuas":["Sihuas","Acobamba","Alfonso Ugarte","Cashapampa","Chingalpo","Huayllabamba","Quiches","Ragash","San Juan","Sicsibamba"],"Yungay":["Yungay","Cascapara","Mancos","Matacoto","Quillo","Ranrahirca","Shupluy","Yanama"]},"Apurímac":{"Abancay":["Abancay","Chacoche","Circa","Curahuasi","Huanipaca","Lambrama","Pichirhua","San Pedro de Cachora","Tamburco"],"Andahuaylas":["Andahuaylas","Andarapa","Chiara","Huancarama","Huancaray","Huayana","Kishuara","Pacobamba","Pacucha","Pampachiri","Pomacocha","San Antonio de Cachi","San Jerónimo","San Miguel de Chaccrampa","Santa María de Chicmo","Talavera","Tumay Huaraca","Turpo","Kaquiabamba","José María Arguedas"],"Antabamba":["Antabamba","El Oro","Huaquirca","Juan Espinoza Medrano","Oropesa","Pachaconas","Sabaino"],"Aymaraes":["Chalhuanca","Capaya","Caraybamba","Chapimarca","Colcabamba","Cotaruse","Ihuayllo","Justo Apu Sahuaraura","Lucre","Pocohuanca","San Juan de Chacña","Sañayca","Soraya","Tapairihua","Tintay","Toraya","Yanaca"],"Cotabambas":["Tambobamba","Cotabambas","Coyllurqui","Haquira","Mara","Challhuahuacho"],"Chincheros":["Chincheros","Anco Huallo","Cocharcas","Huaccana","Ocobamba","Ongoy","Uranmarca","Ranracancha","Rocchacc","El Porvenir","Los Chankas"],"Grau":["Chuquibambilla","Curpahuasi","Gamarra","Huayllati","Mamara","Micaela Bastidas","Pataypampa","Progreso","San Antonio","Santa Rosa","Turpay","Vilcabamba","Virundo","Curasco"]},"Arequipa":{"Arequipa":["Arequipa","Alto Selva Alegre","Cayma","Cerro Colorado","Characato","Chiguata","Jacobo Hunter","La Joya","Mariano Melgar","Miraflores","Mollebaya","Paucarpata","Pocsi","Polobaya","Quequeña","Sabandia","Sachaca","San Juan de Siguas","San Juan de Tarucani","Santa Isabel de Siguas","Santa Rita de Siguas","Socabaya","Tiabaya","Uchumayo","Vitor","Yanahuara","Yarabamba","Yura","José Luis Bustamante Y Rivero"],"Camaná":["Camaná","José María Quimper","Mariano Nicolás Valcárcel","Mariscal Cáceres","Nicolás de Pierola","Ocoña","Quilca","Samuel Pastor"],"Caravelí":["Caravelí","Acarí","Atico","Atiquipa","Bella Unión","Cahuacho","Chala","Chaparra","Huanuhuanu","Jaqui","Lomas","Quicacha","Yauca"],"Castilla":["Aplao","Andagua","Ayo","Chachas","Chilcaymarca","Choco","Huancarqui","Machaguay","Orcopampa","Pampacolca","Tipan","Uñon","Uraca","Viraco"],"Caylloma":["Chivay","Achoma","Cabanaconde","Callalli","Caylloma","Coporaque","Huambo","Huanca","Ichupampa","Lari","Lluta","Maca","Madrigal","San Antonio de Chuca","Sibayo","Tapay","Tisco","Tuti","Yanque","Majes"],"Condesuyos":["Chuquibamba","Andaray","Cayarani","Chichas","Iray","Río Grande","Salamanca","Yanaquihua"],"Islay":["Mollendo","Cocachacra","Dean Valdivia","Islay","Mejia","Punta de Bombón"],"La Unión":["Cotahuasi","Alca","Charcana","Huaynacotas","Pampamarca","Puyca","Quechualla","Sayla","Tauria","Tomepampa","Toro"]},"Ayacucho":{"Huamanga":["Ayacucho","Acocro","Acos Vinchos","Carmen Alto","Chiara","Ocros","Pacaycasa","Quinua","San José de Ticllas","San Juan Bautista","Santiago de Pischa","Socos","Tambillo","Vinchos","Jesús Nazareno","Andrés Avelino Cáceres Dorregaray"],"Cangallo":["Cangallo","Chuschi","Los Morochucos","María Parado de Bellido","Paras","Totos"],"Huanca Sancos":["Sancos","Carapo","Sacsamarca","Santiago de Lucanamarca"],"Huanta":["Huanta","Ayahuanco","Huamanguilla","Iguain","Luricocha","Santillana","Sivia","Llochegua","Canayre","Uchuraccay","Pucacolpa","Chaca"],"La Mar":["San Miguel","Anco","Ayna","Chilcas","Chungui","Luis Carranza","Santa Rosa","Tambo","Samugari","Anchihuay","Oronccoy"],"Lucanas":["Puquio","Aucara","Cabana","Carmen Salcedo","Chaviña","Chipao","Huac-Huas","Laramate","Leoncio Prado","Llauta","Lucanas","Ocaña","Otoca","Saisa","San Cristóbal","San Juan","San Pedro","San Pedro de Palco","Sancos","Santa Ana de Huaycahuacho","Santa Lucia"],"Parinacochas":["Coracora","Chumpi","Coronel Castañeda","Pacapausa","Pullo","Puyusca","San Francisco de Ravacayco","Upahuacho"],"Páucar del Sara Sara":["Pausa","Colta","Corculla","Lampa","Marcabamba","Oyolo","Pararca","San Javier de Alpabamba","San José de Ushua","Sara Sara"],"Sucre":["Querobamba","Belén","Chalcos","Chilcayoc","Huacaña","Morcolla","Paico","San Pedro de Larcay","San Salvador de Quije","Santiago de Paucaray","Soras"],"Víctor Fajardo":["Huancapi","Alcamenca","Apongo","Asquipata","Canaria","Cayara","Colca","Huamanquiquia","Huancaraylla","Hualla","Sarhua","Vilcanchos"],"Vilcas Huamán":["Vilcas Huaman","Accomarca","Carhuanca","Concepción","Huambalpa","Independencia","Saurama","Vischongo"]},"Cajamarca":{"Cajamarca":["Cajamarca","Asunción","Chetilla","Cospan","Encañada","Jesús","Llacanora","Los Baños del Inca","Magdalena","Matara","Namora","San Juan"],"Cajabamba":["Cajabamba","Cachachi","Condebamba","Sitacocha"],"Celendín":["Celendín","Chumuch","Cortegana","Huasmin","Jorge Chávez","José Gálvez","Miguel Iglesias","Oxamarca","Sorochuco","Sucre","Utco","La Libertad de Pallan"],"Chota":["Chota","Anguia","Chadin","Chiguirip","Chimban","Choropampa","Cochabamba","Conchan","Huambos","Lajas","Llama","Miracosta","Paccha","Pion","Querocoto","San Juan de Licupis","Tacabamba","Tocmoche","Chalamarca"],"Contumazá":["Contumaza","Chilete","Cupisnique","Guzmango","San Benito","Santa Cruz de Toledo","Tantarica","Yonan"],"Cutervo":["Cutervo","Callayuc","Choros","Cujillo","La Ramada","Pimpingos","Querocotillo","San Andrés de Cutervo","San Juan de Cutervo","San Luis de Lucma","Santa Cruz","Santo Domingo de la Capilla","Santo Tomas","Socota","Toribio Casanova"],"Hualgayoc":["Bambamarca","Chugur","Hualgayoc"],"Jaén":["Jaén","Bellavista","Chontali","Colasay","Huabal","Las Pirias","Pomahuaca","Pucara","Sallique","San Felipe","San José del Alto","Santa Rosa"],"San Ignacio":["San Ignacio","Chirinos","Huarango","La Coipa","Namballe","San José de Lourdes","Tabaconas"],"San Marcos":["Pedro Gálvez","Chancay","Eduardo Villanueva","Gregorio Pita","Ichocan","José Manuel Quiroz","José Sabogal"],"San Miguel":["San Miguel","Bolívar","Calquis","Catilluc","El Prado","La Florida","Llapa","Nanchoc","Niepos","San Gregorio","San Silvestre de Cochan","Tongod","Unión Agua Blanca"],"San Pablo":["San Pablo","San Bernardino","San Luis","Tumbaden"],"Santa Cruz":["Santa Cruz","Andabamba","Catache","Chancaybaños","La Esperanza","Ninabamba","Pulan","Saucepampa","Sexi","Uticyacu","Yauyucan"]},"Callao":{"Prov. Const. del Callao":["Callao","Bellavista","Carmen de la Legua Reynoso","La Perla","La Punta","Ventanilla","Mi Perú"]},"Cusco":{"Cusco":["Cusco","Ccorca","Poroy","San Jerónimo","San Sebastian","Santiago","Saylla","Wanchaq"],"Acomayo":["Acomayo","Acopia","Acos","Mosoc Llacta","Pomacanchi","Rondocan","Sangarara"],"Anta":["Anta","Ancahuasi","Cachimayo","Chinchaypujio","Huarocondo","Limatambo","Mollepata","Pucyura","Zurite"],"Calca":["Calca","Coya","Lamay","Lares","Pisac","San Salvador","Taray","Yanatile"],"Canas":["Yanaoca","Checca","Kunturkanki","Langui","Layo","Pampamarca","Quehue","Tupac Amaru"],"Canchis":["Sicuani","Checacupe","Combapata","Marangani","Pitumarca","San Pablo","San Pedro","Tinta"],"Chumbivilcas":["Santo Tomas","Capacmarca","Chamaca","Colquemarca","Livitaca","Llusco","Quiñota","Velille"],"Espinar":["Espinar","Condoroma","Coporaque","Ocoruro","Pallpata","Pichigua","Suyckutambo","Alto Pichigua"],"La Convención":["Santa Ana","Echarate","Huayopata","Maranura","Ocobamba","Quellouno","Kimbiri","Santa Teresa","Vilcabamba","Pichari","Inkawasi","Villa Virgen","Villa Kintiarina","Megantoni"],"Paruro":["Paruro","Accha","Ccapi","Colcha","Huanoquite","Omacha","Paccaritambo","Pillpinto","Yaurisque"],"Paucartambo":["Paucartambo","Caicay","Challabamba","Colquepata","Huancarani","Kosñipata"],"Quispicanchi":["Urcos","Andahuaylillas","Camanti","Ccarhuayo","Ccatca","Cusipata","Huaro","Lucre","Marcapata","Ocongate","Oropesa","Quiquijana"],"Urubamba":["Urubamba","Chinchero","Huayllabamba","Machupicchu","Maras","Ollantaytambo","Yucay"]},"Huancavelica":{"Huancavelica":["Huancavelica","Acobambilla","Acoria","Conayca","Cuenca","Huachocolpa","Huayllahuara","Izcuchaca","Laria","Manta","Mariscal Cáceres","Moya","Nuevo Occoro","Palca","Pilchaca","Vilca","Yauli","Ascensión","Huando"],"Acobamba":["Acobamba","Andabamba","Anta","Caja","Marcas","Paucara","Pomacocha","Rosario"],"Angaraes":["Lircay","Anchonga","Callanmarca","Ccochaccasa","Chincho","Congalla","Huanca-Huanca","Huayllay Grande","Julcamarca","San Antonio de Antaparco","Santo Tomas de Pata","Secclla"],"Castrovirreyna":["Castrovirreyna","Arma","Aurahua","Capillas","Chupamarca","Cocas","Huachos","Huamatambo","Mollepampa","San Juan","Santa Ana","Tantara","Ticrapo"],"Churcampa":["Churcampa","Anco","Chinchihuasi","El Carmen","La Merced","Locroja","Paucarbamba","San Miguel de Mayocc","San Pedro de Coris","Pachamarca","Cosme"],"Huaytará":["Huaytara","Ayavi","Córdova","Huayacundo Arma","Laramarca","Ocoyo","Pilpichaca","Querco","Quito-Arma","San Antonio de Cusicancha","San Francisco de Sangayaico","San Isidro","Santiago de Chocorvos","Santiago de Quirahuara","Santo Domingo de Capillas","Tambo"],"Tayacaja":["Pampas","Acostambo","Acraquia","Ahuaycha","Colcabamba","Daniel Hernández","Huachocolpa","Huaribamba","Ñahuimpuquio","Pazos","Quishuar","Salcabamba","Salcahuasi","San Marcos de Rocchac","Surcubamba","Tintay Puncu","Quichuas","Andaymarca","Roble","Pichos","Santiago de Tucuma"]},"Huánuco":{"Huánuco":["Huanuco","Amarilis","Chinchao","Churubamba","Margos","Quisqui (Kichki)","San Francisco de Cayran","San Pedro de Chaulan","Santa María del Valle","Yarumayo","Pillco Marca","Yacus","San Pablo de Pillao"],"Ambo":["Ambo","Cayna","Colpas","Conchamarca","Huacar","San Francisco","San Rafael","Tomay Kichwa"],"Dos de Mayo":["La Unión","Chuquis","Marías","Pachas","Quivilla","Ripan","Shunqui","Sillapata","Yanas"],"Huacaybamba":["Huacaybamba","Canchabamba","Cochabamba","Pinra"],"Huamalíes":["Llata","Arancay","Chavín de Pariarca","Jacas Grande","Jircan","Miraflores","Monzón","Punchao","Puños","Singa","Tantamayo"],"Leoncio Prado":["Rupa-Rupa","Daniel Alomía Robles","Hermílio Valdizan","José Crespo y Castillo","Luyando","Mariano Damaso Beraun","Pucayacu","Castillo Grande","Pueblo Nuevo","Santo Domingo de Anda"],"Marañón":["Huacrachuco","Cholon","San Buenaventura","La Morada","Santa Rosa de Alto Yanajanca"],"Pachitea":["Panao","Chaglla","Molino","Umari"],"Puerto Inca":["Puerto Inca","Codo del Pozuzo","Honoria","Tournavista","Yuyapichis"],"Lauricocha ":["Jesús","Baños","Jivia","Queropalca","Rondos","San Francisco de Asís","San Miguel de Cauri"],"Yarowilca ":["Chavinillo","Cahuac","Chacabamba","Aparicio Pomares","Jacas Chico","Obas","Pampamarca","Choras"]},"Ica":{"Ica ":["Ica","La Tinguiña","Los Aquijes","Ocucaje","Pachacutec","Parcona","Pueblo Nuevo","Salas","San José de Los Molinos","San Juan Bautista","Santiago","Subtanjalla","Tate","Yauca del Rosario"],"Chincha ":["Chincha Alta","Alto Laran","Chavin","Chincha Baja","El Carmen","Grocio Prado","Pueblo Nuevo","San Juan de Yanac","San Pedro de Huacarpana","Sunampe","Tambo de Mora"],"Nasca ":["Nasca","Changuillo","El Ingenio","Marcona","Vista Alegre"],"Palpa ":["Palpa","Llipata","Río Grande","Santa Cruz","Tibillo"],"Pisco ":["Pisco","Huancano","Humay","Independencia","Paracas","San Andrés","San Clemente","Tupac Amaru Inca"]},"Junín":{"Huancayo ":["Huancayo","Carhuacallanga","Chacapampa","Chicche","Chilca","Chongos Alto","Chupuro","Colca","Cullhuas","El Tambo","Huacrapuquio","Hualhuas","Huancan","Huasicancha","Huayucachi","Ingenio","Pariahuanca","Pilcomayo","Pucara","Quichuay","Quilcas","San Agustín","San Jerónimo de Tunan","Saño","Sapallanga","Sicaya","Santo Domingo de Acobamba","Viques"],"Concepción ":["Concepción","Aco","Andamarca","Chambara","Cochas","Comas","Heroínas Toledo","Manzanares","Mariscal Castilla","Matahuasi","Mito","Nueve de Julio","Orcotuna","San José de Quero","Santa Rosa de Ocopa"],"Chanchamayo ":["Chanchamayo","Perene","Pichanaqui","San Luis de Shuaro","San Ramón","Vitoc"],"Jauja ":["Jauja","Acolla","Apata","Ataura","Canchayllo","Curicaca","El Mantaro","Huamali","Huaripampa","Huertas","Janjaillo","Julcán","Leonor Ordóñez","Llocllapampa","Marco","Masma","Masma Chicche","Molinos","Monobamba","Muqui","Muquiyauyo","Paca","Paccha","Pancan","Parco","Pomacancha","Ricran","San Lorenzo","San Pedro de Chunan","Sausa","Sincos","Tunan Marca","Yauli","Yauyos"],"Junín ":["Junin","Carhuamayo","Ondores","Ulcumayo"],"Satipo ":["Satipo","Coviriali","Llaylla","Mazamari","Pampa Hermosa","Pangoa","Río Negro","Río Tambo","Vizcatan del Ene"],"Tarma ":["Tarma","Acobamba","Huaricolca","Huasahuasi","La Unión","Palca","Palcamayo","San Pedro de Cajas","Tapo"],"Yauli ":["La Oroya","Chacapalpa","Huay-Huay","Marcapomacocha","Morococha","Paccha","Santa Bárbara de Carhuacayan","Santa Rosa de Sacco","Suitucancha","Yauli"],"Chupaca ":["Chupaca","Ahuac","Chongos Bajo","Huachac","Huamancaca Chico","San Juan de Iscos","San Juan de Jarpa","Tres de Diciembre","Yanacancha"]},"La Libertad":{"Trujillo ":["Trujillo","El Porvenir","Florencia de Mora","Huanchaco","La Esperanza","Laredo","Moche","Poroto","Salaverry","Simbal","Victor Larco Herrera"],"Ascope ":["Ascope","Chicama","Chocope","Magdalena de Cao","Paijan","Rázuri","Santiago de Cao","Casa Grande"],"Bolívar ":["Bolívar","Bambamarca","Condormarca","Longotea","Uchumarca","Ucuncha"],"Chepén ":["Chepen","Pacanga","Pueblo Nuevo"],"Julcán ":["Julcan","Calamarca","Carabamba","Huaso"],"Otuzco ":["Otuzco","Agallpampa","Charat","Huaranchal","La Cuesta","Mache","Paranday","Salpo","Sinsicap","Usquil"],"Pacasmayo ":["San Pedro de Lloc","Guadalupe","Jequetepeque","Pacasmayo","San José"],"Pataz ":["Tayabamba","Buldibuyo","Chillia","Huancaspata","Huaylillas","Huayo","Ongon","Parcoy","Pataz","Pias","Santiago de Challas","Taurija","Urpay"],"Sánchez Carrión ":["Huamachuco","Chugay","Cochorco","Curgos","Marcabal","Sanagoran","Sarin","Sartimbamba"],"Santiago de Chuco ":["Santiago de Chuco","Angasmarca","Cachicadan","Mollebamba","Mollepata","Quiruvilca","Santa Cruz de Chuca","Sitabamba"],"Gran Chimú ":["Cascas","Lucma","Marmot","Sayapullo"],"Virú ":["Viru","Chao","Guadalupito"]},"Lambayeque":{"Chiclayo ":["Chiclayo","Chongoyape","Eten","Eten Puerto","José Leonardo Ortiz","La Victoria","Lagunas","Monsefu","Nueva Arica","Oyotun","Picsi","Pimentel","Reque","Santa Rosa","Saña","Cayalti","Patapo","Pomalca","Pucala","Tuman"],"Ferreñafe ":["Ferreñafe","Cañaris","Incahuasi","Manuel Antonio Mesones Muro","Pitipo","Pueblo Nuevo"],"Lambayeque ":["Lambayeque","Chochope","Illimo","Jayanca","Mochumi","Morrope","Motupe","Olmos","Pacora","Salas","San José","Tucume"]},"Lima":{"Lima ":["Lima","Ancón","Ate","Barranco","Breña","Carabayllo","Chaclacayo","Chorrillos","Cieneguilla","Comas","El Agustino","Independencia","Jesús María","La Molina","La Victoria","Lince","Los Olivos","Lurigancho","Lurin","Magdalena del Mar","Pueblo Libre","Miraflores","Pachacamac","Pucusana","Puente Piedra","Punta Hermosa","Punta Negra","Rímac","San Bartolo","San Borja","San Isidro","San Juan de Lurigancho","San Juan de Miraflores","San Luis","San Martín de Porres","San Miguel","Santa Anita","Santa María del Mar","Santa Rosa","Santiago de Surco","Surquillo","Villa El Salvador","Villa María del Triunfo"],"Barranca ":["Barranca","Paramonga","Pativilca","Supe","Supe Puerto"],"Cajatambo ":["Cajatambo","Copa","Gorgor","Huancapon","Manas"],"Canta ":["Canta","Arahuay","Huamantanga","Huaros","Lachaqui","San Buenaventura","Santa Rosa de Quives"],"Cañete ":["San Vicente de Cañete","Asia","Calango","Cerro Azul","Chilca","Coayllo","Imperial","Lunahuana","Mala","Nuevo Imperial","Pacaran","Quilmana","San Antonio","San Luis","Santa Cruz de Flores","Zúñiga"],"Huaral ":["Huaral","Atavillos Alto","Atavillos Bajo","Aucallama","Chancay","Ihuari","Lampian","Pacaraos","San Miguel de Acos","Santa Cruz de Andamarca","Sumbilca","Veintisiete de Noviembre"],"Huarochirí ":["Matucana","Antioquia","Callahuanca","Carampoma","Chicla","Cuenca","Huachupampa","Huanza","Huarochiri","Lahuaytambo","Langa","Laraos","Mariatana","Ricardo Palma","San Andrés de Tupicocha","San Antonio","San Bartolomé","San Damian","San Juan de Iris","San Juan de Tantaranche","San Lorenzo de Quinti","San Mateo","San Mateo de Otao","San Pedro de Casta","San Pedro de Huancayre","Sangallaya","Santa Cruz de Cocachacra","Santa Eulalia","Santiago de Anchucaya","Santiago de Tuna","Santo Domingo de Los Olleros","Surco"],"Huaura ":["Huacho","Ambar","Caleta de Carquin","Checras","Hualmay","Huaura","Leoncio Prado","Paccho","Santa Leonor","Santa María","Sayan","Vegueta"],"Oyón ":["Oyon","Andajes","Caujul","Cochamarca","Navan","Pachangara"],"Yauyos ":["Yauyos","Alis","Allauca","Ayaviri","Azángaro","Cacra","Carania","Catahuasi","Chocos","Cochas","Colonia","Hongos","Huampara","Huancaya","Huangascar","Huantan","Huañec","Laraos","Lincha","Madean","Miraflores","Omas","Putinza","Quinches","Quinocay","San Joaquín","San Pedro de Pilas","Tanta","Tauripampa","Tomas","Tupe","Viñac","Vitis"]},"Loreto":{"Maynas ":["Iquitos","Alto Nanay","Fernando Lores","Indiana","Las Amazonas","Mazan","Napo","Punchana","Torres Causana","Belén","San Juan Bautista"],"Alto Amazonas ":["Yurimaguas","Balsapuerto","Jeberos","Lagunas","Santa Cruz","Teniente Cesar López Rojas"],"Loreto ":["Nauta","Parinari","Tigre","Trompeteros","Urarinas"],"Mariscal Ramón Castilla ":["Ramón Castilla","Pebas","Yavari","San Pablo"],"Requena ":["Requena","Alto Tapiche","Capelo","Emilio San Martín","Maquia","Puinahua","Saquena","Soplin","Tapiche","Jenaro Herrera","Yaquerana"],"Ucayali ":["Contamana","Inahuaya","Padre Márquez","Pampa Hermosa","Sarayacu","Vargas Guerra"],"Datem del Marañón ":["Barranca","Cahuapanas","Manseriche","Morona","Pastaza","Andoas"],"Putumayo":["Putumayo","Rosa Panduro","Teniente Manuel Clavero","Yaguas"]},"Madre de Dios":{"Tambopata ":["Tambopata","Inambari","Las Piedras","Laberinto"],"Manu ":["Manu","Fitzcarrald","Madre de Dios","Huepetuhe"],"Tahuamanu ":["Iñapari","Iberia","Tahuamanu"]},"Moquegua":{"Mariscal Nieto ":["Moquegua","Carumas","Cuchumbaya","Samegua","San Cristóbal","Torata"],"General Sánchez Cerro ":["Omate","Chojata","Coalaque","Ichuña","La Capilla","Lloque","Matalaque","Puquina","Quinistaquillas","Ubinas","Yunga"],"Ilo ":["Ilo","El Algarrobal","Pacocha"]},"Pasco":{"Pasco ":["Chaupimarca","Huachon","Huariaca","Huayllay","Ninacaca","Pallanchacra","Paucartambo","San Francisco de Asís de Yarusyacan","Simon Bolívar","Ticlacayan","Tinyahuarco","Vicco","Yanacancha"],"Daniel Alcides Carrión ":["Yanahuanca","Chacayan","Goyllarisquizga","Paucar","San Pedro de Pillao","Santa Ana de Tusi","Tapuc","Vilcabamba"],"Oxapampa ":["Oxapampa","Chontabamba","Huancabamba","Palcazu","Pozuzo","Puerto Bermúdez","Villa Rica","Constitución"]},"Piura":{"Piura ":["Piura","Castilla","Catacaos","Cura Mori","El Tallan","La Arena","La Unión","Las Lomas","Tambo Grande","Veintiseis de Octubre"],"Ayabaca ":["Ayabaca","Frias","Jilili","Lagunas","Montero","Pacaipampa","Paimas","Sapillica","Sicchez","Suyo"],"Huancabamba ":["Huancabamba","Canchaque","El Carmen de la Frontera","Huarmaca","Lalaquiz","San Miguel de El Faique","Sondor","Sondorillo"],"Morropón ":["Chulucanas","Buenos Aires","Chalaco","La Matanza","Morropon","Salitral","San Juan de Bigote","Santa Catalina de Mossa","Santo Domingo","Yamango"],"Paita ":["Paita","Amotape","Arenal","Colan","La Huaca","Tamarindo","Vichayal"],"Sullana ":["Sullana","Bellavista","Ignacio Escudero","Lancones","Marcavelica","Miguel Checa","Querecotillo","Salitral"],"Talara ":["Pariñas","El Alto","La Brea","Lobitos","Los Organos","Mancora"],"Sechura ":["Sechura","Bellavista de la Unión","Bernal","Cristo Nos Valga","Vice","Rinconada Llicuar"]},"Puno":{"Puno ":["Puno","Acora","Amantani","Atuncolla","Capachica","Chucuito","Coata","Huata","Mañazo","Paucarcolla","Pichacani","Plateria","San Antonio","Tiquillaca","Vilque"],"Azángaro ":["Azángaro","Achaya","Arapa","Asillo","Caminaca","Chupa","José Domingo Choquehuanca","Muñani","Potoni","Saman","San Anton","San José","San Juan de Salinas","Santiago de Pupuja","Tirapata"],"Carabaya ":["Macusani","Ajoyani","Ayapata","Coasa","Corani","Crucero","Ituata","Ollachea","San Gaban","Usicayos"],"Chucuito ":["Juli","Desaguadero","Huacullani","Kelluyo","Pisacoma","Pomata","Zepita"],"El Collao ":["Ilave","Capazo","Pilcuyo","Santa Rosa","Conduriri"],"Huancané ":["Huancane","Cojata","Huatasani","Inchupalla","Pusi","Rosaspata","Taraco","Vilque Chico"],"Lampa ":["Lampa","Cabanilla","Calapuja","Nicasio","Ocuviri","Palca","Paratia","Pucara","Santa Lucia","Vilavila"],"Melgar ":["Ayaviri","Antauta","Cupi","Llalli","Macari","Nuñoa","Orurillo","Santa Rosa","Umachiri"],"Moho ":["Moho","Conima","Huayrapata","Tilali"],"San Antonio de Putina ":["Putina","Ananea","Pedro Vilca Apaza","Quilcapuncu","Sina"],"San Román ":["Juliaca","Cabana","Cabanillas","Caracoto","San Miguel"],"Sandia ":["Sandia","Cuyocuyo","Limbani","Patambuco","Phara","Quiaca","San Juan del Oro","Yanahuaya","Alto Inambari","San Pedro de Putina Punco"],"Yunguyo ":["Yunguyo","Anapia","Copani","Cuturapi","Ollaraya","Tinicachi","Unicachi"]},"San Martín":{"Moyobamba ":["Moyobamba","Calzada","Habana","Jepelacio","Soritor","Yantalo"],"Bellavista ":["Bellavista","Alto Biavo","Bajo Biavo","Huallaga","San Pablo","San Rafael"],"El Dorado ":["San José de Sisa","Agua Blanca","San Martín","Santa Rosa","Shatoja"],"Huallaga ":["Saposoa","Alto Saposoa","El Eslabón","Piscoyacu","Sacanche","Tingo de Saposoa"],"Lamas ":["Lamas","Alonso de Alvarado","Barranquita","Caynarachi","Cuñumbuqui","Pinto Recodo","Rumisapa","San Roque de Cumbaza","Shanao","Tabalosos","Zapatero"],"Mariscal Cáceres ":["Juanjuí","Campanilla","Huicungo","Pachiza","Pajarillo"],"Picota ":["Picota","Buenos Aires","Caspisapa","Pilluana","Pucacaca","San Cristóbal","San Hilarión","Shamboyacu","Tingo de Ponasa","Tres Unidos"],"Rioja ":["Rioja","Awajun","Elías Soplin Vargas","Nueva Cajamarca","Pardo Miguel","Posic","San Fernando","Yorongos","Yuracyacu"],"San Martín ":["Tarapoto","Alberto Leveau","Cacatachi","Chazuta","Chipurana","El Porvenir","Huimbayoc","Juan Guerra","La Banda de Shilcayo","Morales","Papaplaya","San Antonio","Sauce","Shapaja"],"Tocache ":["Tocache","Nuevo Progreso","Polvora","Shunte","Uchiza"]},"Tacna":{"Tacna ":["Tacna","Alto de la Alianza","Calana","Ciudad Nueva","Inclan","Pachia","Palca","Pocollay","Sama","Coronel Gregorio Albarracín Lanchipa","La Yarada los Palos"],"Candarave ":["Candarave","Cairani","Camilaca","Curibaya","Huanuara","Quilahuani"],"Jorge Basadre ":["Locumba","Ilabaya","Ite"],"Tarata ":["Tarata","Héroes Albarracín","Estique","Estique-Pampa","Sitajara","Susapaya","Tarucachi","Ticaco"]},"Tumbes":{"Tumbes ":["Tumbes","Corrales","La Cruz","Pampas de Hospital","San Jacinto","San Juan de la Virgen"],"Contralmirante Villar ":["Zorritos","Casitas","Canoas de Punta Sal"],"Zarumilla ":["Zarumilla","Aguas Verdes","Matapalo","Papayal"]},"Ucayali":{"Coronel Portillo ":["Calleria","Campoverde","Iparia","Masisea","Yarinacocha","Nueva Requena","Manantay"],"Atalaya ":["Raymondi","Sepahua","Tahuania","Yurua"],"Padre Abad ":["Padre Abad","Irazola","Curimana","Neshuya","Alexander Von Humboldt"],"Purús":["Purus"]}};
+const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const buscar = (lista, t) => lista.find((x) => norm(x) === norm(t));
+const opciones = (id, lista) => { $(id).innerHTML = lista.map((x) => `<option value="${esc(x)}"></option>`).join(""); };
+const ordenar = (a) => [...a].sort((x, y) => x.localeCompare(y, "es"));
+function deptoActual() { return buscar(Object.keys(UBIGEO), $("#q-depto").value); }
+function provActual() { const d = deptoActual(); return d ? buscar(Object.keys(UBIGEO[d]), $("#q-provincia").value) : null; }
+function actualizarUbigeo() {
+  const d = deptoActual();
+  if (d && $("#q-depto").value !== d) $("#q-depto").value = d;
+  // Provincias: las del departamento, o todas si aún no hay departamento
+  opciones("#dl-prov", ordenar(d ? Object.keys(UBIGEO[d]) : Object.values(UBIGEO).flatMap((x) => Object.keys(x))));
+  const p = provActual();
+  if (p && $("#q-provincia").value !== p) $("#q-provincia").value = p;
+  // Distritos: los de la provincia, los del departamento, o todos
+  opciones("#dl-dist", ordenar(p ? UBIGEO[d][p] : d ? Object.values(UBIGEO[d]).flat() : Object.values(UBIGEO).flatMap((x) => Object.values(x).flat())));
+  const dist = p ? buscar(UBIGEO[d][p], $("#q-distrito").value) : null;
+  if (dist && $("#q-distrito").value !== dist) $("#q-distrito").value = dist;
+}
+opciones("#dl-depto", ordenar(Object.keys(UBIGEO)));
+$("#q-depto").addEventListener("change", () => {
+  const d = deptoActual();
+  // Si cambia el departamento, se borran provincia y distrito que ya no le corresponden
+  if (!d || !buscar(Object.keys(UBIGEO[d]), $("#q-provincia").value)) { $("#q-provincia").value = ""; $("#q-distrito").value = ""; }
+  actualizarUbigeo();
+});
+$("#q-provincia").addEventListener("change", () => {
+  let d = deptoActual();
+  // Si escribió la provincia primero, se completa el departamento
+  if (!d) {
+    const encontrado = Object.entries(UBIGEO).find(([, ps]) => buscar(Object.keys(ps), $("#q-provincia").value));
+    if (encontrado) { $("#q-depto").value = encontrado[0]; d = encontrado[0]; }
+  }
+  const p = provActual();
+  if (!p || !buscar(UBIGEO[d][p], $("#q-distrito").value)) $("#q-distrito").value = "";
+  actualizarUbigeo();
+});
+$("#q-distrito").addEventListener("change", () => {
+  // Si escribió el distrito primero, se completan provincia y departamento (si el nombre es único)
+  if (!provActual()) {
+    const t = $("#q-distrito").value, hallados = [];
+    Object.entries(UBIGEO).forEach(([d, ps]) => Object.entries(ps).forEach(([p, ds]) => { if (buscar(ds, t)) hallados.push([d, p]); }));
+    const posibles = deptoActual() ? hallados.filter(([d]) => d === deptoActual()) : hallados;
+    if (posibles.length === 1) { $("#q-depto").value = posibles[0][0]; $("#q-provincia").value = posibles[0][1]; }
+  }
+  actualizarUbigeo();
+});
+["#q-depto", "#q-provincia"].forEach((id) => $(id).addEventListener("input", actualizarUbigeo));
+actualizarUbigeo();
+
+/* ================= Inicio ================= */
+dibujarHojaEjemplo("tizon_tardio");
+mostrarDiagnostico(true);
+pintarCalc();
+// Sin pestañas: la página siempre abre en el diagnóstico, aunque la dirección tenga #calculadora
+if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+irA("diagnostico", false);
+</script>
+</body>
+</html>
