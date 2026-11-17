@@ -1,0 +1,3 @@
+# Solo para entrenar o usar el modelo de IA (pesado, ~600 MB)
+-r requirements.txt
+tensorflow>=2.16

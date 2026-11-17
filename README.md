@@ -7,15 +7,34 @@ Web gratuita para agricultores:
 3. **Calculadora**: con las medidas de la plantación (área total o largo × ancho, en ha, m², acres, manzanas…) calcula
    el producto por mochila, las mochilas por aplicación, cuánto comprar, los pasos para preparar y aplicar, y el costo promedio.
 
-## Ejecutar en local
+## Descargar y ejecutar
+
+Requisitos: Python 3.10 o superior y Git.
 
 ```bash
-python3 -m venv --system-site-packages .venv
+git clone https://github.com/turtless-bit/agricultura-abierta.git
+cd agricultura-abierta
+python3 -m venv .venv
+```
+
+Linux / macOS:
+```bash
 .venv/bin/pip install -r requirements.txt
 .venv/bin/uvicorn backend.app:app --reload
 ```
 
+Windows (PowerShell):
+```powershell
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\uvicorn backend.app:app --reload
+```
+
 Abrir http://localhost:8000
+
+- `requirements.txt` es liviano y basta para usar la página.
+- `requirements-ia.txt` agrega TensorFlow (~600 MB): solo hace falta para entrenar o usar el modelo de IA.
+- Sin clave de Google la página funciona, pero el bloque "¿Cuándo fumigar?" dice que el clima no está disponible
+  (ver la sección del clima más abajo para crear tu propio `.env`).
 
 ## Entrenar el modelo de IA (papa)
 
@@ -23,8 +42,9 @@ Sin modelo, la web funciona en **modo demo** (estimación por color, no fiable).
 
 1. Descargar el dataset PlantVillage (p. ej. desde Kaggle) y copiar las carpetas
    `Potato___Early_blight`, `Potato___Late_blight` y `Potato___healthy` dentro de `datos/papa/`.
-2. Entrenar:
+2. Instalar TensorFlow y entrenar:
    ```bash
+   .venv/bin/pip install -r requirements-ia.txt
    .venv/bin/python -m backend.entrenar --datos datos/papa --epocas 10
    ```
 3. Se generan `models/papa_modelo.keras` y `models/clases.json`. Reiniciar el servidor y la web pasará a modo **IA**.
