@@ -1,0 +1,5 @@
+LiteRT.js 2.6.0 (@litertjs/core + @litertjs/wasm-utils), Google, licencia Apache-2.0.
+https://github.com/google-ai-edge/LiteRT
+litert.mjs es el paquete empaquetado en un solo archivo con esbuild. De la carpeta wasm/ se copiaron
+solo las dos variantes que usa loadLiteRt() sin opciones: la normal (navegadores con relaxed SIMD)
+y la "compat" (navegadores más antiguos).

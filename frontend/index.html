@@ -9,7 +9,10 @@ body { margin: 0; font: 14px system-ui, sans-serif; }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 </style>
-<title>AgriculturaAbierta</title>
+<title>PapaQhawaq</title>
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="theme-color" content="#2e7d4b">
+<link rel="apple-touch-icon" href="/static/iconos/icono-192.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap">
@@ -71,6 +74,9 @@ button, input { font: inherit; color: inherit; }
 .top-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; font-size: 1.3rem; }
 .brand svg { width: 34px; height: 34px; }
+.idioma { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--surface); }
+.idioma button { border: 0; background: none; color: var(--muted); font: inherit; font-size: .85rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.idioma button[aria-pressed="true"] { background: var(--leaf); color: var(--on-leaf); }
 .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
 .tab {
   display: flex; align-items: center; gap: 8px; border: 0; background: transparent; border-radius: 999px;
@@ -94,6 +100,8 @@ button, input { font: inherit; color: inherit; }
 #diag-res { display: flex; flex-direction: column; gap: 16px; }
 .ver-prods { margin-top: auto; align-self: flex-end; }
 .ver-prods svg { transition: transform .2s; }
+.ver-prods[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.qcalc > .ver-nota { grid-column: 1 / -1; }
 .ver-prods[aria-expanded="true"] svg { transform: rotate(180deg); }
 .rec { border-top: 1px solid var(--line); padding-top: 14px; }
 .qcalc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
@@ -140,8 +148,20 @@ button, input { font: inherit; color: inherit; }
 .sev button:hover { border-color: var(--leaf); }
 .sev button[aria-pressed="true"] { border-color: var(--leaf); background: var(--leaf-soft); }
 .sev svg { width: 56px; height: 56px; }
+.sev .sev-nota { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+.sev img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; display: block; }
 .sev b { font-size: .9rem; }
 .sev small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+/* Con foto: la foto ocupa todo el ancho de la tarjeta y el texto va debajo */
+.sev button:has(img), .sev button:has(.sev-ph) { justify-items: stretch; text-align: left; align-content: start; padding: 8px 8px 12px; }
+.sev button:has(img) b, .sev button:has(img) small, .sev button:has(.sev-ph) b, .sev button:has(.sev-ph) small { padding-inline: 4px; }
+/* Nivel sin foto: el dibujo en un recuadro del mismo tamaño que las fotos */
+.sev .sev-ph { width: 100%; aspect-ratio: 4 / 3; display: grid; place-items: center; border-radius: 10px; background: var(--leaf-soft); }
+.sev .sev-ph svg { width: 42%; height: auto; grid-row: auto; }
+@media (max-width: 600px) {
+  .sev { grid-template-columns: minmax(0, 1fr); }
+  .sev img, .sev .sev-ph { aspect-ratio: 3 / 2; }
+}
 .input.select select { border: 0; background: transparent; padding: 12px 14px; width: 100%; min-width: 0; font: inherit; font-weight: 600; color: var(--ink); outline: none; }
 .qres { display: grid; gap: 10px; }
 .qstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
@@ -158,10 +178,26 @@ button, input { font: inherit; color: inherit; }
 @media (max-width: 1100px) { .qstats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .qstats > div:nth-child(2) { border-right: 0; } .qstats > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); } }
 @media (max-width: 560px) { .qcalc { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .q.span2 { grid-column: span 2; } .qcalc > .ver-prods { grid-column: span 2; } }
 .drop {
-  display: grid; place-items: center; aspect-ratio: 1 / 1; max-width: 100%; border: 2px dashed var(--line); border-radius: 14px;
-  background: var(--surface-2); cursor: pointer; overflow: hidden; position: relative; width: 100%; max-height: 72vh;
+  display: grid; place-items: center; aspect-ratio: 1 / 1; max-width: 100%; border-radius: 18px;
+  border: 2px dashed color-mix(in srgb, var(--leaf) 40%, transparent);
+  background: color-mix(in srgb, var(--leaf-soft) 45%, var(--surface));
+  cursor: pointer; overflow: hidden; position: relative; width: 100%; max-height: 72vh;
+  transition: border-color .2s, background-color .2s;
 }
-.drop.over { border-color: var(--leaf); }
+.drop:hover, .drop.over { border-color: var(--leaf); background: var(--leaf-soft); }
+.drop:not(.vacio) { border-style: solid; border-color: var(--line); background: var(--surface-2); }
+.drop.vacio canvas { display: none; }
+.drop:not(.vacio) .drop-vacio { display: none; }
+.drop-vacio { display: grid; justify-items: center; gap: 6px; padding: 24px; text-align: center; color: var(--muted); }
+.drop-vacio .drop-icono { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 6px;
+  border-radius: 50%; background: var(--leaf-soft); color: var(--leaf); transition: transform .2s; }
+.drop:hover .drop-icono { transform: scale(1.06); }
+.drop-vacio .drop-icono svg { width: 28px; height: 28px; }
+.drop-vacio b { color: var(--ink); font-size: 1rem; }
+.drop-vacio small { font-size: .85rem; }
+.acciones-foto { flex-direction: column; flex-wrap: nowrap; }
+.acciones-foto .btn { width: 100%; }
+.verdict-nota { margin: 6px 0 0; color: var(--muted); font-size: .92rem; }
 .drop canvas, .drop img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .drop-hint { position: absolute; inset: auto 10px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
   padding: 8px 12px; font-size: .85rem; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow); }
@@ -178,6 +214,7 @@ button, input { font: inherit; color: inherit; }
 
 .verdict { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
 .verdict h2 { font-size: 1.7rem; }
+.verdict-aviso { margin: 8px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--ink); font-size: .92rem; }
 .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; border-radius: 999px; padding: 4px 10px; }
 .badge.bad { background: var(--warn-soft); color: var(--warn); }
 .badge.ok { background: var(--leaf-soft); color: var(--leaf-strong); }
@@ -343,7 +380,8 @@ button, input { font: inherit; color: inherit; }
   .drop { aspect-ratio: 4 / 3; }
 }
 @media (max-width: 560px) {
-  .top-in { flex-direction: column; align-items: stretch; }
+  .top-in { flex-direction: row; align-items: center; }
+  .idioma button { padding: 5px 10px; font-size: .8rem; }
   .tabs { justify-content: space-between; }
   .tab { flex: 1; justify-content: center; padding: 9px 8px; font-size: .88rem; }
   .tab svg { display: none; }
@@ -363,9 +401,6 @@ button, input { font: inherit; color: inherit; }
 .cl-mejor b { font-size: 1.1rem; }
 .cl-mejor.ok { background: var(--leaf-soft); color: var(--leaf-strong); }
 .cl-mejor.no { background: var(--warn-soft); color: var(--warn); }
-.cl-otras { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: .85rem; }
-.cl-otras small { color: var(--muted); }
-.cl-otras span { background: var(--leaf-soft); color: var(--leaf-strong); border-radius: 8px; padding: 3px 9px; font-weight: 600; }
 .cl-tabla { display: grid; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
 .cl-fila { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: 10px; align-items: center; min-width: 640px; }
 .cl-dia { font-size: .85rem; font-weight: 600; }
@@ -390,9 +425,10 @@ button, input { font: inherit; color: inherit; }
 .cl-factores small { display: block; color: var(--muted); font-size: .75rem; font-weight: 600; }
 .cl-factores b { display: block; font-size: 1.05rem; }
 .cl-factores span { font-size: .78rem; color: var(--muted); }
-.cl-motivos { margin: 0; padding-left: 18px; font-size: .88rem; color: var(--warn); }
-.cl-ok { margin: 0; font-size: .88rem; color: var(--leaf-strong); }
-.cl-nota { margin: 0; font-size: .82rem; color: var(--muted); }
+.cl-por { margin: 0; font-size: .9rem; line-height: 1.45; color: var(--ink); }
+.cl-por.ok b { color: var(--leaf-strong); }
+.cl-por.aviso b { color: var(--warn); }
+.cl-por.no b { color: #b3412e; }
 .cal div small + b + small { color: var(--leaf-strong); }
 @media (max-width: 760px) { .cl-factores { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cl-ley em { margin-left: 0; } }
 /* Sección 2 ocupa toda la ventana (escritorio) */
@@ -471,6 +507,9 @@ button, input { font: inherit; color: inherit; }
   .sev { gap: 8px; }
   .sev button { grid-template-columns: 34px minmax(0, 1fr); justify-items: start; text-align: left; align-items: center; column-gap: 8px; row-gap: 0; padding: 6px 10px; }
   .sev svg { width: 34px; height: 34px; grid-row: span 2; }
+  .sev button:has(img), .sev button:has(.sev-ph) { grid-template-columns: minmax(0, 1fr); justify-items: stretch; align-items: start; align-content: start; padding: 8px 8px 10px; }
+  .sev .sev-ph svg { width: 42%; height: auto; }
+  .sev img { width: 100%; height: auto; aspect-ratio: 4 / 3; grid-row: auto; border-radius: 10px; }
   .sev b { font-size: .85rem; }
   .sev small { font-size: .74rem; line-height: 1.25; }
   .drop { max-height: none; }
@@ -484,7 +523,11 @@ button, input { font: inherit; color: inherit; }
   <div class="wrap top-in">
     <div class="brand">
       <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="var(--leaf)"/><path d="M12 27c0-9 6-15 17-15 0 11-6 17-14 17" fill="none" stroke="var(--on-leaf)" stroke-width="2.6" stroke-linecap="round"/><path d="M11 30c3-5 7-9 12-12" fill="none" stroke="var(--on-leaf)" stroke-width="2.6" stroke-linecap="round"/></svg>
-      AgriculturaAbierta
+      PapaQhawaq
+    </div>
+    <div class="idioma" role="group" aria-label="Idioma / Simi">
+      <button type="button" data-idioma="es" aria-pressed="true">Español</button>
+      <button type="button" data-idioma="qu" aria-pressed="false">Quechua</button>
     </div>
   </div>
 </header>
@@ -499,14 +542,24 @@ button, input { font: inherit; color: inherit; }
     <div class="diag">
       <div class="panel">
         <p class="eyebrow">Foto de la hoja</p>
-        <label class="drop" id="drop" for="foto">
+        <label class="drop vacio" id="drop" for="foto">
           <canvas id="lienzo" width="448" height="448" aria-label="Foto de la hoja"></canvas>
+          <span class="drop-vacio">
+            <span class="drop-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+            <b>Toma una foto de la hoja</b>
+            <small>Toca aquí o arrastra una imagen</small>
+          </span>
         </label>
-        <input type="file" id="foto" accept="image/*" hidden>
-        <div class="row">
+        <!-- capture="environment": en el celular abre directo la cámara trasera -->
+        <input type="file" id="foto" accept="image/*" capture="environment" hidden>
+        <input type="file" id="foto-galeria" accept="image/*" hidden>
+        <div class="row acciones-foto">
           <button class="btn" id="btn-subir" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
             Subir foto</button>
+          <button class="btn ghost" id="btn-galeria" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>
+            Desde la galería</button>
         </div>
       </div>
 
@@ -576,6 +629,7 @@ button, input { font: inherit; color: inherit; }
           <button class="btn ver-prods" id="ver-prods" type="button">
             <span>Ver productos recomendados</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <p class="bad-txt ver-nota" id="ver-nota" hidden></p>
         </form>
       </div>
     </div>
@@ -658,6 +712,7 @@ button, input { font: inherit; color: inherit; }
   </section>
 </main>
 
+<script src="/static/qu.js"></script>
 <script>
 /* ================= Datos ================= */
 const ENF = {
@@ -672,7 +727,7 @@ const ENF = {
       "Riega temprano en la mañana, no al atardecer.",
       "Usa semilla certificada y variedades tolerantes."
     ],
-    productos: ["manzate", "dithane", "mancozeb80", "curzate_m8", "clorotalonil", "azoxistrobina", "difenoconazol"]
+    productos: ["manzate", "dithane", "mancozeb80", "zetron", "difenol", "susku", "amistar_top", "melyra", "curzate_m8", "capataz", "antracol"]
   },
   tizon_tardio: {
     nombre: "Rancha", corto: "Rancha", agente: "Phytophthora infestans", grave: true,
@@ -685,7 +740,7 @@ const ENF = {
       "Mejora el drenaje para que no se empoce el agua.",
       "Alterna productos de distinto tipo para que la rancha no se haga resistente."
     ],
-    productos: ["parancha", "mata_rancha", "infinito", "javari", "consento", "acrobat_mz", "curzate_m8", "sphinx_supra", "trivia", "antracol", "dithane", "manzate", "ridomil"]
+    productos: ["parancha", "mata_rancha", "infinito", "javari", "consento", "acrobat_mz", "curzate_m8", "sphinx_supra", "trivia", "antracol", "dithane", "manzate", "ridomil", "capataz", "zetron", "mancozeb80"]
   },
   sana: {
     nombre: "Planta sana", corto: "Prevención", agente: "", grave: false,
@@ -695,30 +750,12 @@ const ENF = {
       "En época de lluvias y frío, aplica un producto preventivo como el mancozeb.",
       "Mantén un buen abonamiento y buen drenaje."
     ],
-    productos: ["manzate", "dithane", "antracol"]
+    productos: ["manzate", "dithane", "mancozeb80", "antracol", "zetron"]   // leves y preventivos (de contacto)
   }
 };
 
 // dosis en kg o L por hectárea (etiqueta); agua en L por hectárea; precios en soles
 const PROD = {
-  mancozeb:           { nombre: "Mancozeb 80 % WP", corto: "MANCOZEB", conc: "80 % WP", color: "#c99a1c", tipo: "Preventivo (de contacto)", u: "kg", dmin: 2.0, dmax: 2.5, agua: 400, int: 7, max: 6, carencia: 7, reingreso: 24, env: 1, precio: 32,
-    modo: "Cubre bien las hojas por arriba y por abajo. Aplícalo antes de las lluvias: previene, no cura." },
-  clorotalonil:       { nombre: "Clorotalonil 72 % SC", corto: "CLOROTALONIL", conc: "72 % SC", color: "#2f6fb0", tipo: "Preventivo (de contacto)", u: "L", dmin: 1.5, dmax: 2.0, agua: 400, int: 7, max: 6, carencia: 7, reingreso: 48, env: 1, precio: 50,
-    modo: "Rocía parejo sobre toda la planta, como prevención o al ver las primeras manchas." },
-  azoxistrobina:      { nombre: "Azoxistrobina 25 % SC", corto: "AZOXISTROBINA", conc: "25 % SC", color: "#7a43a3", tipo: "Sistémico (entra en la planta)", u: "L", dmin: 0.3, dmax: 0.5, agua: 300, int: 10, max: 2, carencia: 7, reingreso: 12, env: 0.25, precio: 65,
-    modo: "Rocía sobre las hojas. Úsalo máximo 2 veces por cosecha y alterna con otro producto." },
-  difenoconazol:      { nombre: "Difenoconazol 25 % EC", corto: "DIFENOCONAZOL", conc: "25 % EC", color: "#c0452c", tipo: "Sistémico (cura)", u: "L", dmin: 0.3, dmax: 0.5, agua: 300, int: 14, max: 3, carencia: 14, reingreso: 24, env: 0.25, precio: 45,
-    modo: "Rocía apenas veas las primeras manchas. Alterna con un preventivo." },
-  oxicloruro_cobre:   { nombre: "Oxicloruro de cobre 50 % WP", corto: "COBRE", conc: "50 % WP", color: "#23948a", tipo: "Preventivo a base de cobre", u: "kg", dmin: 2.0, dmax: 3.0, agua: 400, int: 7, max: 6, carencia: 7, reingreso: 24, env: 1, precio: 28,
-    modo: "Rocía como prevención. No lo mezcles con productos ácidos y evita aplicarlo con mucho sol." },
-  cimoxanil_mancozeb: { nombre: "Cimoxanil + Mancozeb WP", corto: "CIMOXANIL+MZ", conc: "8 + 64 % WP", color: "#d4761b", tipo: "Cura y protege", u: "kg", dmin: 2.0, dmax: 2.5, agua: 400, int: 7, max: 4, carencia: 14, reingreso: 24, env: 1, precio: 45,
-    modo: "Aplica apenas veas síntomas o después de lluvias: cura infecciones de 1 o 2 días." },
-  metalaxil_mancozeb: { nombre: "Metalaxil-M + Mancozeb WG", corto: "METALAXIL+MZ", conc: "4 + 64 % WG", color: "#3c8a3c", tipo: "Sistémico + preventivo", u: "kg", dmin: 2.5, dmax: 2.5, agua: 400, int: 10, max: 3, carencia: 14, reingreso: 48, env: 1, precio: 75,
-    modo: "Rocía sobre las hojas. Máximo 3 veces por cosecha; alterna con otro tipo de producto." },
-  dimetomorf:         { nombre: "Dimetomorf 50 % WP", corto: "DIMETOMORF", conc: "50 % WP", color: "#8a5a2b", tipo: "Sistémico (frena el hongo)", u: "kg", dmin: 0.4, dmax: 0.5, agua: 400, int: 7, max: 4, carencia: 7, reingreso: 24, env: 0.5, precio: 85,
-    modo: "Rocía sobre las hojas, mejor mezclado con un preventivo como el mancozeb." },
-  propamocarb:        { nombre: "Propamocarb 72 % SL", corto: "PROPAMOCARB", conc: "72 % SL", color: "#1d8bb3", tipo: "Sistémico", u: "L", dmin: 1.5, dmax: 2.0, agua: 400, int: 7, max: 4, carencia: 14, reingreso: 24, env: 1, precio: 70,
-    modo: "Rocía sobre las hojas y alterna con otros productos." },
   /* ---- Productos reales (fichas técnicas en imagenes/productos/<id>/) ----
      nivel: leve | medio | grave (clasificación del equipo)
      dmin/dmax: dosis por hectárea de la ficha · agua: L/ha (de la ficha cuando da dosis por cilindro de 200 L; si no, 400)
@@ -766,21 +803,30 @@ const PROD = {
   ridomil:      { nivel: "leve", nombre: "Ridomil Gold MZ 68 WP", corto: "RIDOMIL GOLD", conc: "68 WP", color: "#c8102e", tipo: "Metalaxil-M 4 % + Mancozeb 64 %", u: "kg",
                   dmin: 2.0, dmax: 3.0, agua: 400, int: 10, max: 3, carencia: 15, reingreso: 24, env: 1, precio: 95, precioEst: true,
                   modo: "Preventivo: cada 10 a 14 días. Con síntomas: la segunda a los 5 a 7 días y luego cada 10 a 14. Máximo 3 por campaña." },
+  capataz:      { nivel: "leve", nombre: "Capataz", corto: "CAPATAZ", conc: "WP", color: "#1f6f3a", tipo: "Cymoxanil 80 g/kg + Mancozeb 640 g/kg", u: "kg",
+                  dmin: 1.0, dmax: 2.0, agua: 400, int: 7, max: 4 /* supuesto */, carencia: 14, reingreso: 24 /* supuesto */, env: 1, precio: 45, precioEst: true,
+                  modo: "Aplícalo de forma preventiva o con los primeros síntomas, cada 10 a 14 días; si ya hay síntomas o el ataque es fuerte, cada 5 a 7 días." },
+  difenol:      { nivel: "leve", nombre: "Difenol", corto: "DIFENOL", conc: "250 EC", color: "#a3342b", tipo: "Difenoconazole 250 g/L", u: "L",
+                  dmin: 0.3, dmax: 0.3, agua: 400, int: 14 /* supuesto */, max: 2 /* supuesto */, carencia: 30, reingreso: 24, env: 1, precio: 160, precioEst: true,
+                  modo: "La ficha indica 0.15 L por cilindro de 200 L. Aplícalo con los primeros síntomas, temprano en la mañana, y alterna con un preventivo." },
+  zetron:       { nivel: "leve", nombre: "Zetron 720 SC", corto: "ZETRON", conc: "720 SC", color: "#2f6fb0", tipo: "Clorotalonil 720 g/L", u: "L",
+                  dmin: 1.0, dmax: 1.0, agua: 400, int: 7 /* supuesto */, max: 4 /* supuesto */, carencia: 3, reingreso: 24 /* supuesto */, env: 1, precio: 55, precioEst: true,
+                  modo: "La ficha indica 0.5 L por cilindro de 200 L. Es preventivo de contacto: aplícalo temprano en la mañana o por la tarde, cubriendo bien las hojas." },
+  susku:        { nivel: "medio", nombre: "Susku", corto: "SUSKU", conc: "SC", color: "#6b3fa0", tipo: "Azoxystrobin 200 g/L + Difenoconazole 125 g/L", u: "L",
+                  dmin: 0.5, dmax: 0.55, agua: 400, int: 14 /* supuesto */, max: 2 /* supuesto */, carencia: 7, reingreso: 24, env: 1, precio: 180, precioEst: true,
+                  modo: "Aplícalo con los primeros síntomas. Diluye primero la dosis en un balde con agua y luego échala al cilindro. No subas la dosis." },
+  amistar_top:  { nivel: "grave", nombre: "Amistar Top", corto: "AMISTAR TOP", conc: "SC", color: "#2a5aa8", tipo: "Azoxystrobin 200 g/L + Difenoconazole 125 g/L", u: "L",
+                  dmin: 0.45, dmax: 0.5, agua: 400, int: 14 /* supuesto */, max: 1, carencia: 30, reingreso: 24, env: 0.25, precio: 76 /* S/ 255–355 por L → ~S/ 305/L */, precioEst: true,
+                  modo: "Una sola aplicación por campaña en papa. Úsalo cuando la alternariosis ya avanzó y alterna con productos de otro tipo." },
+  melyra:       { nivel: "grave", nombre: "Melyra", corto: "MELYRA", conc: "SC", color: "#1d5f8a", tipo: "Mefentrifluconazole 200 g/L + Pyraclostrobin 200 g/L", u: "L",
+                  dmin: 0.4, dmax: 0.6, agua: 400, int: 14 /* supuesto */, max: 1, carencia: 7, reingreso: 4, env: 0.15, precio: 53 /* S/ 330–370 por L → ~S/ 350/L */, precioEst: true,
+                  modo: "Máximo una aplicación por campaña. Llena el cilindro hasta un tercio con agua limpia, agrega la dosis y completa con agua." },
 };
 
 // Cómo actúa cada producto (de sus fichas técnicas; revisar con un agrónomo)
 // accion: contacto (solo previene) | sistemico/translaminar (entra en la hoja)
 // cura: puede detener infecciones recientes · lluvia: resistencia al lavado · frac: grupos de resistencia
 const ATRIB = {
-  mancozeb:           { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
-  clorotalonil:       { accion: "contacto",     cura: false, lluvia: "media", frac: ["M05"] },
-  azoxistrobina:      { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["11"] },
-  difenoconazol:      { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["3"] },
-  oxicloruro_cobre:   { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M01"] },
-  cimoxanil_mancozeb: { accion: "translaminar", cura: true,  lluvia: "media", frac: ["27", "M03"] },
-  metalaxil_mancozeb: { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["4", "M03"] },
-  dimetomorf:         { accion: "translaminar", cura: true,  lluvia: "media", frac: ["40"] },
-  propamocarb:        { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["28"] },
   parancha:           { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["11", "27", "40"] },
   mata_rancha:        { accion: "translaminar", cura: true,  lluvia: "media", frac: ["27", "M03"] },
   infinito:           { accion: "translaminar", cura: true,  lluvia: "alta",  frac: ["28", "43"] },
@@ -795,18 +841,32 @@ const ATRIB = {
   mancozeb80:         { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
   manzate:            { accion: "contacto",     cura: false, lluvia: "baja",  frac: ["M03"] },
   ridomil:            { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["4", "M03"] },
+  capataz:            { accion: "translaminar", cura: true,  lluvia: "media", frac: ["27", "M03"] },
+  difenol:            { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["3"] },
+  zetron:             { accion: "contacto",     cura: false, lluvia: "media", frac: ["M05"] },
+  susku:              { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["11", "3"] },
+  amistar_top:        { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["11", "3"] },
+  melyra:             { accion: "sistemico",    cura: true,  lluvia: "alta",  frac: ["3", "11"] },
 };
 Object.entries(ATRIB).forEach(([id, a]) => Object.assign(PROD[id], a));
 ["parancha", "mata_rancha", "infinito", "javari", "consento", "acrobat_mz", "curzate_m8", "sphinx_supra", "trivia",
- "antracol", "dithane", "mancozeb80", "manzate", "ridomil"].forEach((id) => Object.assign(PROD[id], {
+ "antracol", "dithane", "mancozeb80", "manzate", "ridomil", "capataz", "difenol", "zetron", "susku", "amistar_top", "melyra"].forEach((id) => Object.assign(PROD[id], {
   img: `imagenes/productos/${id}/foto.webp`,
   ficha: `imagenes/productos/${id}/ficha-tecnica.pdf`,
   hoja: `imagenes/productos/${id}/hoja-seguridad.pdf`,
 }));
-// Productos genéricos (sin ficha propia): nivel para el ranking
-Object.assign(PROD.clorotalonil, { nivel: "leve" });
-Object.assign(PROD.azoxistrobina, { nivel: "medio" });
-Object.assign(PROD.difenoconazol, { nivel: "medio" });
+// Productos que sirven para las dos enfermedades, pero su etiqueta en papa es solo para una:
+// se recomiendan con una advertencia y menos puntos en la otra enfermedad
+const CUIDADO = {
+  tizon_temprano: {
+    capataz: "Su etiqueta en papa es para la rancha; contra la alternariosis solo protege por el mancozeb que contiene",
+    antracol: "Su etiqueta en papa es para la rancha; contra la alternariosis solo previene",
+  },
+  tizon_tardio: {
+    zetron: "Su etiqueta en papa es para la alternariosis; contra la rancha solo protege antes de que entre",
+    mancozeb80: "Su etiqueta en papa es para la alternariosis; contra la rancha solo protege antes de que entre",
+  },
+};
 
 /* ================= Utilidades ================= */
 const $ = (s) => document.querySelector(s);
@@ -865,44 +925,6 @@ const lienzo = $("#lienzo");
 const ctx = lienzo.getContext("2d", { willReadFrequently: true });
 let ejemploN = 0;
 
-function dibujarHojaEjemplo(tipo) {
-  const W = lienzo.width, H = lienzo.height;
-  ctx.fillStyle = "#e9ede4"; ctx.fillRect(0, 0, W, H);
-  const hoja = new Path2D();
-  hoja.moveTo(W * 0.5, H * 0.08);
-  hoja.bezierCurveTo(W * 0.95, H * 0.25, W * 0.9, H * 0.75, W * 0.5, H * 0.92);
-  hoja.bezierCurveTo(W * 0.1, H * 0.75, W * 0.05, H * 0.25, W * 0.5, H * 0.08);
-  ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(-0.35); ctx.translate(-W / 2, -H / 2);
-  const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#4f9a3e"); g.addColorStop(1, "#2f7432");
-  ctx.fillStyle = g; ctx.fill(hoja);
-  ctx.save(); ctx.clip(hoja);
-  ctx.strokeStyle = "rgba(200,235,170,.55)"; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.1); ctx.lineTo(W * 0.5, H * 0.9); ctx.stroke();
-  ctx.lineWidth = 1.6;
-  for (let i = 0; i < 6; i++) {
-    const y = H * (0.22 + i * 0.11);
-    ctx.beginPath(); ctx.moveTo(W * 0.5, y); ctx.quadraticCurveTo(W * 0.62, y - 20, W * 0.82, y - 40); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(W * 0.5, y); ctx.quadraticCurveTo(W * 0.38, y - 20, W * 0.18, y - 40); ctx.stroke();
-  }
-  const manchas = [[0.36, 0.42, 30], [0.62, 0.55, 38], [0.42, 0.7, 26], [0.6, 0.3, 22], [0.33, 0.58, 18]];
-  if (tipo === "tizon_temprano") {
-    manchas.forEach(([x, y, r]) => {
-      ctx.fillStyle = "rgba(205,190,70,.85)"; ctx.beginPath(); ctx.arc(W * x, H * y, r * 1.35, 0, 7); ctx.fill();
-      ctx.fillStyle = "#7a4c22"; ctx.beginPath(); ctx.arc(W * x, H * y, r, 0, 7); ctx.fill();
-      ctx.strokeStyle = "#5c3a1b"; ctx.lineWidth = 2;
-      for (let k = 0.35; k < 1; k += 0.3) { ctx.beginPath(); ctx.arc(W * x, H * y, r * k, 0, 7); ctx.stroke(); }
-    });
-  } else if (tipo === "tizon_tardio") {
-    [[0.62, 0.35, 60], [0.38, 0.66, 52], [0.3, 0.3, 30]].forEach(([x, y, r]) => {
-      ctx.fillStyle = "#1e2a17"; ctx.beginPath();
-      ctx.ellipse(W * x, H * y, r * 1.2, r * 0.9, 0.6, 0, 7); ctx.fill();
-      ctx.fillStyle = "rgba(60,75,40,.7)"; ctx.beginPath(); ctx.ellipse(W * x, H * y, r * 1.45, r * 1.1, 0.6, 0, 7); ctx.fill();
-      ctx.fillStyle = "#18210f"; ctx.beginPath(); ctx.ellipse(W * x, H * y, r, r * 0.75, 0.6, 0, 7); ctx.fill();
-    });
-  }
-  ctx.restore(); ctx.restore();
-}
-
 function rgb2hsv(r, g, b) {
   r /= 255; g /= 255; b /= 255;
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
@@ -937,10 +959,43 @@ function analizar() {
   return pts;
 }
 
-function mostrarDiagnostico(esEjemplo, probsServidor) {
-  const probs = probsServidor || analizar();
-  const clase = Object.keys(probs).reduce((a, b) => (probs[a] > probs[b] ? a : b));
-  const e = ENF[clase];
+// Resultados del modelo de IA que no son una enfermedad concreta.
+// "calc" es la enfermedad con la que se abre la calculadora (manejo preventivo).
+const RESULTADO_EXTRA = {
+  no_detectado: {
+    nombre: "No se detectó alternariosis ni rancha", calc: "sana",
+    aviso: "La hoja parece sana o tener otro problema que esta herramienta todavía no reconoce, consulta a un agrónomo para más información."
+  },
+  dudoso: {
+    nombre: "Resultado dudoso", calc: "sana",
+    aviso: "La foto tiene señales que podrían ser alternariosis o rancha. Toma otra foto de una sola hoja con manchas, de cerca y con buena luz. Si sigue saliendo dudoso, consulta a un agrónomo."
+  },
+  otro_problema: {
+    nombre: "La hoja tiene un problema que la app no reconoce", calc: "sana",
+    aviso: "La hoja no parece sana, puede tener otro problema que esta herramienta todavía no reconoce, consulta a un agrónomo para más información."
+  },
+  no_es_papa: {
+    nombre: "No parece una hoja de papa", calc: "sana",
+    aviso: "Esta herramienta solo reconoce enfermedades de la papa. Toma la foto de cerca a una hoja de papa, con buena luz, que ocupe casi toda la foto."
+  }
+};
+
+// res: respuesta del servidor ({clase, confianza}) o, en el ejemplo inicial, probabilidades por color
+function mostrarDiagnostico(esEjemplo, res) {
+  let clase, conf;
+  if (res && res.clase) {
+    clase = res.clase; conf = res.confianza;
+  } else {
+    const probs = res || analizar();
+    clase = Object.keys(probs).reduce((a, b) => (probs[a] > probs[b] ? a : b));
+    conf = probs[clase];
+  }
+  const extra = RESULTADO_EXTRA[clase];
+  // Hoja sana según el modelo de IA (no en el ejemplo inicial)
+  const avisoSana = !extra && clase === "sana" && res && res.clase
+    ? "La hoja parece sana, mira los productos recomendados para mantenerla así." : "";
+  if (!extra && !ENF[clase]) clase = "sana";
+  const e = ENF[extra ? extra.calc : clase];
   const prods = e.productos.map((id) => {
     const p = PROD[id];
     return `<div class="mini">${envase(p)}<span><b>${esc(p.nombre)}</b></span></div>`;
@@ -949,11 +1004,14 @@ function mostrarDiagnostico(esEjemplo, probsServidor) {
     <div class="verdict">
       <div>
         <p class="eyebrow">Resultado</p>
-        <h2>${e.nombre}${e.agente ? ` <i class="cient">${e.agente}</i>` : ""}</h2>
+        <h2>${extra ? extra.nombre : e.nombre}${!extra && e.agente ? ` <i class="cient">${e.agente}</i>` : ""}</h2>
       </div>
-      <div class="conf"><b class="num">${(probs[clase] * 100).toFixed(0)}%</b><small>seguridad</small></div>
-    </div>`;
-  q.clase = clase;
+      ${clase === "otro_problema" ? "" : `<div class="conf"><b class="num">${(conf * 100).toFixed(0)}%</b><small>seguridad</small></div>`}
+    </div>${extra ? `<p class="verdict-aviso">${extra.aviso}</p>` : avisoSana ? `<p class="verdict-aviso">${avisoSana}</p>` : ""}`;
+  q.clase = extra ? extra.calc : clase;
+  q.resultado = clase;
+  estadoVerProds();
+  pintarAvance(q.clase);
   q.maxApl = Math.max(...e.productos.map((id) => PROD[id].max));
   calcularRapido();
 }
@@ -982,8 +1040,23 @@ $("#q-menos").addEventListener("click", () => { q.apl = Math.max(1, q.apl - 1); 
 $("#q-mas").addEventListener("click", () => { q.apl = Math.min(q.maxApl, q.apl + 1); calcularRapido(); });
 $("#qcalc").addEventListener("submit", (e) => e.preventDefault());
 
+// Solo hay recomendaciones con una foto que dio rancha, alternariosis o una hoja sana
+const CON_RECOMENDACION = ["tizon_temprano", "tizon_tardio", "sana"];
+function estadoVerProds() {
+  const ok = CON_RECOMENDACION.includes(q.resultado);
+  $("#ver-prods").setAttribute("aria-disabled", String(!ok));
+  if (ok) $("#ver-nota").hidden = true;
+}
 $("#diag-res").addEventListener("click", (ev) => {
   const ver = ev.target.closest("#ver-prods");
+  if (ver && !CON_RECOMENDACION.includes(q.resultado)) {
+    const nota = $("#ver-nota");
+    nota.textContent = q.resultado
+      ? "Solo hay productos recomendados cuando la foto muestra rancha, alternariosis o una hoja sana. Toma otra foto de cerca a una hoja."
+      : "Primero sube una foto de la hoja.";
+    nota.hidden = false;
+    return;
+  }
   if (ver) {
     // Abre la calculadora con la enfermedad detectada y los datos ya escritos
     estado.enf = q.clase;
@@ -1012,33 +1085,146 @@ function cargarFoto(f) {
     ctx.fillStyle = "#e9ede4"; ctx.fillRect(0, 0, W, H);
     ctx.drawImage(img, (W - img.width * s) / 2, (H - img.height * s) / 2, img.width * s, img.height * s);
     URL.revokeObjectURL(img.src);
-    diagnosticarEnServidor(f);
+    $("#drop").classList.remove("vacio");
+    diagnosticar(img, f);
   };
   img.src = URL.createObjectURL(f);
 }
-// Envía la foto a /api/diagnosticar (modelo de IA del backend). Sin servidor, usa la estimación por color.
+// El modelo usa 224x224 px: se envía la foto reducida (lado mayor 512 px, ~50 KB)
+// en lugar de los 3-8 MB del celular, así sube mucho más rápido con datos móviles.
+function achicar(img) {
+  try {
+    const s = Math.min(1, 512 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const url = c.toDataURL("image/jpeg", 0.9), bin = atob(url.split(",")[1]);
+    const b = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+    return new File([b], "foto.jpg", { type: "image/jpeg" });
+  } catch (e) { return null; }  // si falla, se envía la original
+}
+/* ================= IA en el celular (LiteRT.js) =================
+   Los 3 modelos .tflite corren dentro del navegador, así el diagnóstico funciona sin internet.
+   Si el navegador no puede (muy antiguo o sin memoria), se usa el servidor como antes. */
+const IA = { promesa: null };
+function cargarIA() {
+  if (IA.promesa) return IA.promesa;
+  IA.promesa = (async () => {
+    const lrt = await import("/static/vendor/litert/litert.mjs");
+    await lrt.loadLiteRt("/static/vendor/litert/wasm/");
+    const cargar = async (nombre) => {
+      const et = await (await fetch(`/modelos/${nombre}_etiquetas.json`)).json();
+      const m = await lrt.loadAndCompile(`/modelos/${nombre}.tflite`, { accelerator: "wasm" });
+      return { m, umbral: et.umbral };
+    };
+    // uno tras otro: en el celular la memoria es limitada
+    const filtro = await cargar("papa_es_papa");
+    const alt = await cargar("papa_alternariosis");
+    const ran = await cargar("papa_lancha");
+    const sana = await cargar("papa_sana").catch(() => null);   // opcional: "¿la hoja está sana?"
+    return { lrt, filtro, alt, ran, sana };
+  })();
+  IA.promesa.catch(() => { IA.promesa = null; });
+  return IA.promesa;
+}
+// Igual que en el entrenamiento: la foto entera a 224 x 224 px con suavizado (antialias), RGB de 0 a 255.
+// El navegador no suaviza bien al achicar de golpe, así que se reduce a la mitad varias veces.
+function pixeles(img) {
+  let src = img, w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  while (w > 448 || h > 448) {
+    const w2 = Math.max(224, Math.ceil(w / 2)), h2 = Math.max(224, Math.ceil(h / 2));
+    const m = document.createElement("canvas");
+    m.width = w2; m.height = h2;
+    const gm = m.getContext("2d");
+    gm.imageSmoothingQuality = "high";
+    gm.drawImage(src, 0, 0, w2, h2);
+    src = m; w = w2; h = h2;
+  }
+  const c = document.createElement("canvas");
+  c.width = c.height = 224;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.imageSmoothingQuality = "high";
+  g.drawImage(src, 0, 0, 224, 224);
+  const d = g.getImageData(0, 0, 224, 224).data, x = new Float32Array(224 * 224 * 3);
+  for (let i = 0, j = 0; i < d.length; i += 4) { x[j++] = d[i]; x[j++] = d[i + 1]; x[j++] = d[i + 2]; }
+  return x;
+}
+async function probabilidad(ia, mod, x) {
+  const t = new ia.lrt.Tensor(x, [1, 224, 224, 3]);
+  try {
+    const out = await mod.m.run(t);
+    const p = out[0].toTypedArray()[0];
+    out.forEach((o) => o.delete());
+    return p;
+  } finally { t.delete(); }
+}
+// Misma regla que backend/modelo.py
+async function diagnosticarEnNavegador(img) {
+  const ia = await cargarIA(), x = pixeles(img);
+  const pp = await probabilidad(ia, ia.filtro, x);
+  if (pp < ia.filtro.umbral) return { clase: "no_es_papa", confianza: 1 - pp, probabilidades: { papa: pp } };
+  const pa = await probabilidad(ia, ia.alt, x), pl = await probabilidad(ia, ia.ran, x);
+  const esA = pa >= ia.alt.umbral, esL = pl >= ia.ran.umbral;
+  const probabilidades = { tizon_temprano: pa, tizon_tardio: pl };
+  let r = esA && !esL ? ["tizon_temprano", pa] : esL && !esA ? ["tizon_tardio", pl]
+        : esA && esL ? ["dudoso", Math.max(pa, pl)] : ["no_detectado", 1 - Math.max(pa, pl)];
+  if (r[0] === "no_detectado" && ia.sana) {
+    // ni alternariosis ni rancha: ¿está sana o tiene algo que la app no reconoce?
+    const ps = await probabilidad(ia, ia.sana, x);
+    probabilidades.sana = ps;
+    r = ps >= ia.sana.umbral ? ["sana", ps] : ["otro_problema", 1 - ps];
+  }
+  return { clase: r[0], confianza: r[1], probabilidades };
+}
+async function diagnosticar(img, f) {
+  $("#verdict").innerHTML = `<div class="verdict"><div><p class="eyebrow">Resultado</p><h2>Analizando la foto…</h2></div></div>`;
+  q.resultado = null; estadoVerProds();
+  try {
+    mostrarDiagnostico(false, await diagnosticarEnNavegador(img));
+  } catch (e) {
+    console.warn("IA en el navegador no disponible, se usa el servidor:", e);
+    diagnosticarEnServidor(achicar(img) || f);
+  }
+}
+// Envía la foto a /api/diagnosticar: el modelo de IA corre en el servidor.
+// Si falla, se muestra un error (no se inventa un diagnóstico).
 async function diagnosticarEnServidor(f) {
   try {
     const fd = new FormData();
     fd.append("foto", f);
     const r = await fetch("/api/diagnosticar?cultivo=papa", { method: "POST", body: fd });
-    if (!r.ok) throw new Error(r.status);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      const ex = new Error(err.detail || "El servidor no pudo procesar la foto. Inténtalo de nuevo.");
+      ex.servidor = true;
+      throw ex;
+    }
     const d = await r.json();
-    mostrarDiagnostico(false, d.probabilidades);
+    mostrarDiagnostico(false, d);
   } catch (e) {
-    mostrarDiagnostico(false);
+    $("#verdict").innerHTML = `
+      <div class="verdict"><div>
+        <p class="eyebrow">Resultado</p>
+        <h2>No se pudo analizar la foto</h2>
+      </div></div>
+      <p class="verdict-aviso">${esc(e.servidor ? e.message : "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.")}</p>`;
   }
 }
 $("#btn-volver").addEventListener("click", () => irA("diagnostico"));
 $("#btn-subir").addEventListener("click", () => $("#foto").click());
-$("#foto").addEventListener("change", (e) => cargarFoto(e.target.files[0]));
+$("#btn-galeria").addEventListener("click", () => $("#foto-galeria").click());
+["#foto", "#foto-galeria"].forEach((id) => $(id).addEventListener("change", (e) => {
+  cargarFoto(e.target.files[0]);
+  e.target.value = "";  // permite volver a elegir la misma foto
+}));
 const drop = $("#drop");
 ["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
 ["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
 drop.addEventListener("drop", (e) => cargarFoto(e.dataTransfer.files[0]));
 
 /* ================= Calculadora ================= */
-const estado = { enf: "tizon_temprano", producto: "mancozeb", modo: "total", dosis: "media", apl: null, precios: {} };
+const estado = { enf: "tizon_temprano", producto: "mancozeb80", modo: "total", dosis: "media", apl: null, precios: {} };
 
 /* ---- Elegir el mejor producto con todos los datos de la sección 1 ---- */
 function costoProducto(id, m2) {
@@ -1131,6 +1317,12 @@ function rankear() {
       if (c <= presu) { puntos += 15 + 10 * (minimo / c); pros.push(`Te alcanza: cuesta ${soles(c)} y tu presupuesto es ${soles(presu)}`); }
       else { puntos -= 25; contras.push(`Cuesta ${soles(c)}: supera tu presupuesto de ${soles(presu)}`); }
     } else { puntos += 15 * (minimo / c); }
+    // Pocas aplicaciones: conviene un producto que proteja más días por aplicación (sistémico, intervalo de 10 a 14 días)
+    if ((estado.aplDeseado ?? 99) <= 2 && p.int >= 10 && p.accion !== "contacto") {
+      puntos += 15; pros.push(`Protege más días por aplicación (cada ${p.int} días)`);
+    }
+    const cuidado = CUIDADO[estado.enf]?.[id];
+    if (cuidado) { puntos -= 15; contras.push(cuidado); }
     if ((estado.aplDeseado ?? 0) > p.max) { puntos -= 5; contras.push(`Solo se puede aplicar ${p.max} ${p.max === 1 ? "vez" : "veces"} por cosecha`); }
     return { id, puntos, pros, contras, descarte, costo: c };
   });
@@ -1266,8 +1458,9 @@ function calcular() {
   const items = Array.from({ length: n }, (_, i) => `<div><small>Aplicación ${i + 1}</small><b>${fecha(ini + i * p.int)}</b>${i === 0 && estado.ventana ? `<small>${estado.ventana.desde}–${estado.ventana.hasta}</small>` : ""}</div>`);
   if (diasCosecha != null) items.push(`<div class="harvest"><small>Cosecha</small><b>${fecha(diasCosecha)}</b></div>`);
   let avisos = "";
+  if (n === 1) avisos += `<p class="bad-txt">Una sola aplicación protege unos ${p.int} días. Si siguen las lluvias, vas a necesitar otra.</p>`;
   if ((estado.aplDeseado ?? n) > p.max) {
-    avisos += `<p class="bad-txt">Este producto se puede usar como máximo ${p.max} ${p.max === 1 ? "vez" : "veces"} por cosecha, así que el cálculo usa ${p.max}.</p>`;
+    avisos += `<p class="bad-txt">Este producto se puede usar como máximo ${p.max} ${p.max === 1 ? "vez" : "veces"} por cosecha.</p>`;
   }
   if (diasCosecha != null && diasCosecha - (n - 1) * p.int < p.carencia) {
     const k = Math.max(0, Math.floor((diasCosecha - p.carencia) / p.int) + 1);
@@ -1369,7 +1562,7 @@ function pintarClima(d) {
   // Motivos más frecuentes cuando no hay ventana buena
   const conteo = {};
   d.horas.filter((h) => h.estado === "no").forEach((h) => h.motivos.forEach((m) => {
-    const k = m.split(" (")[0]; conteo[k] = (conteo[k] || 0) + 1;
+    const k = m.split(/ \(|: /)[0]; conteo[k] = (conteo[k] || 0) + 1;
   }));
   const principales = Object.entries(conteo).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
 
@@ -1395,11 +1588,9 @@ function pintarClima(d) {
           : `<small>Sin buen momento en 3 días</small><b>${principales.length ? esc(principales.join(" · ")) : "Revisa el clima más adelante"}</b>`}
       </div>
     </div>
-    ${v.length > 1 ? `<div class="cl-otras"><small>Otros buenos momentos:</small>${v.slice(1, 5).map((w) => `<span>${diaTxt(w.fecha)} · ${w.desde}–${w.hasta}</span>`).join("")}</div>` : ""}
     <div class="cl-tabla">${filas}</div>
     <div class="cl-ley"><span class="ok"></span>Buen momento<span class="aviso"></span>Con cuidado<span class="no"></span>No fumigar<em>Toca una hora para ver el detalle</em></div>
-    <div class="cl-detalle" id="cl-detalle"></div>
-    <p class="cl-nota">En la sierra el clima cambia mucho entre quebradas y laderas, sobre todo el viento. Usa este pronóstico para planificar y, antes de fumigar, mide el viento en tu chacra con un anemómetro de bolsillo.</p>`;
+    <div class="cl-detalle" id="cl-detalle"></div>`;
 
   const inicial = mejor ? d.horas.findIndex((h) => h.fecha === mejor.fecha && h.hora === mejor.desde) : 0;
   detalleHora(d, Math.max(0, inicial));
@@ -1408,11 +1599,25 @@ function pintarClima(d) {
   });
 }
 
+// Explicación corta de por qué la hora es buena, con cuidado o mala
+function porQue(h, U) {
+  if (h.estado === "ok") {
+    return `<b>Buen momento:</b> viento suave${h.viento != null ? ` (${fmt(h.viento, 0)} km/h)` : ""}, sin lluvia en las próximas ${U.horas_secado} h`
+      + `${h.temp != null ? `, ${fmt(h.temp, 0)} °C` : ""}${h.hr != null ? ` y humedad de ${fmt(h.hr, 0)} %` : ""}. `
+      + `El producto cae sobre las hojas, no se evapora y tiene tiempo de secarse.`;
+  }
+  const lista = h.motivos.map((m) => esc(m) + ".").join(" ");
+  return h.estado === "aviso"
+    ? `<b>Con cuidado:</b> se puede fumigar, pero ten en cuenta lo siguiente. ${lista}`
+    : `<b>No fumigar:</b> ${lista}`;
+}
+
 function detalleHora(d, i) {
   const h = d.horas[i];
   document.querySelectorAll("#clima .cl-h").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
   const n = (x, u, dec = 0) => (x == null ? "—" : `${fmt(x, dec)} ${u}`);
   const rocioCerca = h.temp != null && h.rocio != null && h.temp - h.rocio <= d.umbrales.rocio_delta;
+  const inversion = h.motivos.some((m) => m.startsWith("Posible inversión"));
   $("#cl-detalle").innerHTML = `
     <div class="cl-det-cab"><b>${diaTxt(h.fecha)}, ${h.hora}</b><span class="cl-tag ${h.estado}">${ESTADO_TXT[h.estado]}</span>${h.cielo ? `<span class="muted">${esc(h.cielo)}</span>` : ""}</div>
     <div class="cl-factores num">
@@ -1420,9 +1625,9 @@ function detalleHora(d, i) {
       <div><small>Temperatura</small><b>${n(h.temp, "°C")}</b><span>rocío a ${n(h.rocio, "°C")}</span></div>
       <div><small>Humedad</small><b>${n(h.hr, "%")}</b><span>${h.hr != null && h.hr < d.umbrales.hr_min ? "muy seco" : ""}</span></div>
       <div><small>Lluvia</small><b>${n(h.lluvia_prob, "%")}</b><span>probabilidad${h.tormenta ? ` · tormenta ${fmt(h.tormenta, 0)} %` : ""}</span></div>
-      <div><small>Rocío / inversión</small><b>${rocioCerca ? "Hojas mojadas" : "—"}</b><span>nubes ${n(h.nubes, "%")}</span></div>
+      <div><small>Rocío / inversión</small><b>${rocioCerca ? "Hojas mojadas" : h.rocio == null ? "—" : "Hojas secas"}</b><span>${inversion ? "posible inversión" : "sin inversión"} · nubes ${n(h.nubes, "%")}</span></div>
     </div>
-    ${h.motivos.length ? `<ul class="cl-motivos">${h.motivos.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="cl-ok">Buenas condiciones para fumigar a esta hora.</p>`}`;
+    <p class="cl-por ${h.estado}">${porQue(h, d.umbrales)}</p>`;
 }
 
 /* ================= Enfermedades ================= */
@@ -1457,8 +1662,45 @@ function hojaIcono(n) {
     <path d="M30 8 L30 54" stroke="#b9e2a3" stroke-width="1.5"/>
     ${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${n > 6 ? 5 : 3.6}" fill="#7a4c22"/>`).join("")}</svg>`;
 }
-$("#q-avance").innerHTML = AVANCES.map(([k, t, d, n]) =>
-  `<button type="button" data-avance="${k}" aria-pressed="false">${hojaIcono(n)}<b>${t}</b><small>${d}</small></button>`).join("");
+// Foto y descripción de cada nivel de avance según la enfermedad detectada.
+// Descripciones basadas en UC IPM, extensión de U. Maine / MSU / NDSU / Virginia Tech e INIA Perú.
+// Sin foto (img: null) se usa el dibujo de la hoja.
+const AVANCE_ENF = {
+  tizon_temprano: {
+    poco:  { img: "/imagenes/avance/alternariosis/leve.webp",
+             desc: "Pocas manchas marrones pequeñas, con anillos como una diana, solo en las hojas de abajo (las más viejas)." },
+    medio: { img: "/imagenes/avance/alternariosis/medio.webp",
+             desc: "Manchas en varias hojas de abajo y del medio de la planta, con la hoja amarilla alrededor." },
+    mucho: { img: "/imagenes/avance/alternariosis/grave.webp",
+             desc: "Manchas en casi todas las hojas, también las de arriba. Las hojas se ponen amarillas, se secan y caen." }
+  },
+  tizon_tardio: {
+    poco:  { img: "/imagenes/avance/rancha/leve.webp",
+             desc: "Una o pocas manchas verde oscuro, como mojadas, en la punta o el borde de algunas hojas." },
+    medio: { img: "/imagenes/avance/rancha/medio.webp",
+             desc: "Manchas marrón oscuro a negras en varias hojas y tallos. Con humedad sale un moho blanco por debajo de la hoja." },
+    mucho: { img: "/imagenes/avance/rancha/grave.webp",
+             desc: "Plantas negras o secas, tallos manchados y olor fuerte a planta podrida. Puede acabar con la chacra en pocos días." }
+  }
+};
+function pintarAvance(enf) {
+  // Sin foto, o si la hoja no tiene rancha ni alternariosis: solo una descripción, sin fotos de ejemplo
+  if (!AVANCE_ENF[enf]) {
+    datos.avance = null;
+    $("#q-avance").innerHTML = `<p class="sev-nota">Cuando la app detecte rancha o alternariosis en tu foto, aquí verás fotos de ejemplo para elegir qué tan avanzada está la enfermedad.</p>`;
+    return;
+  }
+  const porEnf = AVANCE_ENF[enf] || {};
+  const nombre = ENF[enf] ? ENF[enf].nombre.toLowerCase() : "";
+  $("#q-avance").innerHTML = AVANCES.map(([k, t, d, n]) => {
+    const x = porEnf[k] || {};
+    const conFotos = Object.values(porEnf).some((v) => v.img);
+    const fig = x.img ? `<img src="${x.img}" alt="Ejemplo de ${nombre} con avance ${t.toLowerCase()}" loading="lazy">`
+      : conFotos ? `<span class="sev-ph">${hojaIcono(n)}</span>` : hojaIcono(n);
+    return `<button type="button" data-avance="${k}" aria-pressed="${datos.avance === k}">${fig}<b>${t}</b><small>${x.desc || d}</small></button>`;
+  }).join("");
+}
+pintarAvance(q.clase || "sana");
 $("#q-avance").addEventListener("click", (ev) => {
   const b = ev.target.closest("[data-avance]"); if (!b) return;
   datos.avance = b.dataset.avance;
@@ -1537,12 +1779,133 @@ $("#q-distrito").addEventListener("change", () => {
 actualizarUbigeo();
 
 /* ================= Inicio ================= */
-dibujarHojaEjemplo("tizon_tardio");
-mostrarDiagnostico(true);
+// Sin foto todavía: resultado en espera. La calculadora empieza con rancha, como antes.
+$("#verdict").innerHTML = `
+  <div class="verdict"><div>
+    <p class="eyebrow">Resultado</p>
+    <h2>Esperando una foto</h2>
+  </div></div>
+  <p class="verdict-nota">Toma una foto de cerca a una hoja y aquí verás qué enfermedad tiene tu papa.</p>`;
+q.clase = "tizon_tardio";
+q.resultado = null;
+estadoVerProds();
+pintarAvance(null);
+q.maxApl = Math.max(...ENF[q.clase].productos.map((id) => PROD[id].max));
+calcularRapido();
 pintarCalc();
 // Sin pestañas: la página siempre abre en el diagnóstico, aunque la dirección tenga #calculadora
 if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 irA("diagnostico", false);
+/* ================= Modo sin internet ================= */
+// El service worker guarda la página, los modelos y las imágenes; la IA se prepara apenas abre la página
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(() => navigator.serviceWorker.ready).then((reg) => {
+    const urls = new Set();
+    Object.values(PROD).forEach((p) => ["img", "ficha", "hoja"].forEach((k) => p[k] && urls.add("/" + p[k].replace(/^\//, ""))));
+    document.querySelectorAll("img[src^='/imagenes/'], img[src^='imagenes/']").forEach((im) => urls.add(new URL(im.src).pathname));
+    ["leve", "medio", "grave"].forEach((n) => ["alternariosis", "rancha"].forEach((e) => urls.add(`/imagenes/avance/${e}/${n}.webp`)));
+    reg.active && reg.active.postMessage({ guardar: [...urls] });
+  }).catch(() => {});
+}
+setTimeout(() => cargarIA().catch(() => {}), 1500);
+
+/* ================= Idioma: castellano / quechua ================= */
+// Los textos se escriben en castellano; en quechua se reemplazan en la pantalla con las traducciones de qu.js
+// (también los que la app crea después: diagnóstico, productos, clima...). Las fichas en PDF no se tocan.
+const QU_EX = (window.QU && window.QU.EXACTOS) || {};
+const QU_PAT = ((window.QU && window.QU.PATRONES) || []).map(([re, rep]) => [new RegExp(re), rep]);
+function buscarExacto(t) {
+  if (QU_EX[t] != null) return QU_EX[t];
+  for (const [re, rep] of QU_PAT) if (re.test(t)) return t.replace(re, rep);
+  return null;
+}
+function buscarQU(t) {   // también con o sin el punto final
+  const r = buscarExacto(t);
+  if (r != null || t.endsWith(".")) return r;
+  const c = buscarExacto(t + ".");
+  return c == null ? null : c.replace(/\.$/, "");
+}
+// Frases largas: se prueba entera; si no, se parte en oraciones (". "), luego en "; " y luego en ": ".
+function traducirTexto(t, prof = 0) {
+  let r = buscarQU(t);
+  if (r != null) return r;
+  if (t.endsWith(".") && (r = buscarQU(t.slice(0, -1))) != null) return r + ".";
+  if (prof > 4) return null;
+  for (const sep of [/(?<=\.)\s+/, /(?<=;)\s+/, /(?<=:)\s+/]) {
+    const partes = t.split(sep);
+    if (partes.length < 2) continue;
+    let cambio = false;
+    const out = partes.map((x) => {
+      const fin = x.match(/[.;:]$/) ? x.slice(-1) : "";
+      const y = traducirTexto(fin ? x.slice(0, -1) : x, prof + 1);
+      if (y != null) { cambio = true; return y + fin; }
+      return x;
+    });
+    if (cambio) return out.join(" ");
+  }
+  return null;
+}
+function traducirQU(s) {
+  const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s);
+  if (!m[2]) return s;
+  const r = traducirTexto(m[2]);
+  return r == null ? s : m[1] + r + m[3];
+}
+let idioma = "es";
+const ORIG_TXT = new WeakMap(), ORIG_ATR = new WeakMap();
+const ATRIBUTOS = ["placeholder", "aria-label", "title", "alt"];
+const saltar = (el) => !el || el.closest("script,style,textarea,.idioma");
+function nodoQU(n) {
+  if (saltar(n.parentElement)) return;
+  const reg = ORIG_TXT.get(n);
+  if (reg && n.nodeValue === reg.qu) return;            // ya está traducido
+  const qu = traducirQU(n.nodeValue);
+  ORIG_TXT.set(n, { es: n.nodeValue, qu });
+  if (qu !== n.nodeValue) n.nodeValue = qu;
+}
+function atributosQU(el) {
+  if (saltar(el)) return;
+  let reg = ORIG_ATR.get(el); if (!reg) { reg = {}; ORIG_ATR.set(el, reg); }
+  for (const a of ATRIBUTOS) {
+    const v = el.getAttribute(a); if (v == null || (reg[a] && v === reg[a].qu)) continue;
+    const qu = traducirQU(v); reg[a] = { es: v, qu };
+    if (qu !== v) el.setAttribute(a, qu);
+  }
+}
+function recorrer(raiz, fnTexto, fnEl) {
+  if (raiz.nodeType === 3) { fnTexto(raiz); return; }
+  if (raiz.nodeType !== 1) return;
+  fnEl(raiz);
+  const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+  let n; while ((n = w.nextNode())) (n.nodeType === 3 ? fnTexto : fnEl)(n);
+}
+const observador = new MutationObserver((cambios) => {
+  if (idioma !== "qu") return;
+  for (const c of cambios) {
+    if (c.type === "childList") c.addedNodes.forEach((n) => recorrer(n, nodoQU, atributosQU));
+    else if (c.type === "characterData") nodoQU(c.target);
+    else if (c.type === "attributes" && ATRIBUTOS.includes(c.attributeName)) atributosQU(c.target);
+  }
+});
+function ponerIdioma(nuevo) {
+  idioma = nuevo === "qu" ? "qu" : "es";
+  document.documentElement.lang = idioma === "qu" ? "qu" : "es";
+  document.querySelectorAll(".idioma [data-idioma]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.idioma === idioma)));
+  if (idioma === "qu") {
+    recorrer(document.body, nodoQU, atributosQU);
+    observador.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATRIBUTOS });
+  } else {
+    observador.disconnect();
+    recorrer(document.body, (n) => { const r = ORIG_TXT.get(n); if (r && n.nodeValue === r.qu) n.nodeValue = r.es; },
+      (el) => { const r = ORIG_ATR.get(el); if (r) for (const a in r) if (el.getAttribute(a) === r[a].qu) el.setAttribute(a, r[a].es); });
+  }
+  try { localStorage.setItem("idioma", idioma); } catch (e) { /* sin almacenamiento: solo esta visita */ }
+}
+document.querySelector(".idioma").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-idioma]"); if (b) ponerIdioma(b.dataset.idioma);
+});
+try { if (localStorage.getItem("idioma") === "qu") ponerIdioma("qu"); } catch (e) { /* idioma por defecto */ }
+
 </script>
 </body>
 </html>

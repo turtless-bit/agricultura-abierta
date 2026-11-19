@@ -1,0 +1,423 @@
+/* Traducción de la app al quechua chanka (Andahuaylas, Apurímac).
+ *
+ * ⚠️ BORRADOR: debe revisarlo un hablante nativo antes de usarlo con agricultores.
+ *
+ * Cómo funciona: la página busca cada texto en castellano en EXACTOS; si no está, prueba los PATRONES
+ * (textos con números) y, si es una frase larga, la parte en oraciones y traduce cada una.
+ * Para corregir una traducción basta con cambiar el texto de la derecha. Para un texto que todavía
+ * sale en castellano, se agrega una línea nueva: "texto en castellano": "texto en quechua".
+ * Los nombres de productos, de lugares y las fichas técnicas (PDF) no se traducen.
+ */
+const N = "([\\d.,]+)";            // un número (12 · 0,5 · 1.250)
+const HORA = "(\\d{1,2}:\\d{2})";   // 08:00
+
+window.QU = {
+  EXACTOS: {
+    // ---------- Cabecera y sección 1 ----------
+    "¿Qué tiene tu papa?": "¿Imataq papaykipi kachkan?",
+    "Sube una foto de la hoja afectada.": "Unqusqa rapimanta huk fotota churay.",
+    "Foto de la hoja": "Rapipa fotun",
+    "Toma una foto de la hoja": "Rapita fotografiay",
+    "Toca aquí o arrastra una imagen": "Kaypi ñitiy utaq huk fotota kayman aysamuy",
+    "Subir foto": "Fotota churay",
+    "Desde la galería": "Galeriamanta",
+    "Resultado": "Tarisqa",
+    "Esperando una foto": "Huk fotota suyachkan",
+    "Toma una foto de cerca a una hoja y aquí verás qué enfermedad tiene tu papa.":
+      "Huk rapita asuykuspa fotografiay, kaypim rikunki papaykipa ima unquyninta.",
+    "Analizando la foto…": "Fotota qawachkan…",
+    "seguridad": "chiqap kaynin",
+    "El servidor no pudo procesar la foto. Inténtalo de nuevo.": "Servidorqa manam fotota qawayta atirqanchu. Huktawan ruray.",
+    "No se pudo analizar la foto": "Manam fotota qawayta atikurqanchu",
+    "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.": "Manam servidorwan tinkinchu. Internetniykita qawapay, hinaspa huktawan ruray.",
+
+    // Resultados
+    "Rancha": "Rancha",
+    "Alternariosis": "Alternariosis",
+    "Planta sana": "Qali yura",
+    "Prevención": "Harkakuy",
+    "No se detectó alternariosis ni rancha": "Manam alternariosisniyuqchu nitaq ranchayuqchu",
+    "Resultado dudoso": "Iskayrayanapaq tarisqa",
+    "La hoja tiene un problema que la app no reconoce": "Rapipiqa kanmi huk unquy, app mana riqsisqan",
+    "No parece una hoja de papa": "Manam papa rapichu rikchakun",
+    "La hoja parece sana o tener otro problema que esta herramienta todavía no reconoce, consulta a un agrónomo para más información.":
+      "Rapiqa qalim rikchakun, utaq huk unquyniyuqchá, kay app manaraq riqsisqan; astawan yachanaykipaq huk agrónomowan rimay.",
+    "La hoja parece sana, mira los productos recomendados para mantenerla así.":
+      "Rapiqa qalim rikchakun; chayna kananpaq allin hampikunata qaway.",
+    "La hoja no parece sana, puede tener otro problema que esta herramienta todavía no reconoce, consulta a un agrónomo para más información.":
+      "Rapiqa manam qalichu rikchakun, huk unquyniyuqchá kanman, kay app manaraq riqsisqan; astawan yachanaykipaq huk agrónomowan rimay.",
+    "La foto tiene señales que podrían ser alternariosis o rancha. Toma otra foto de una sola hoja con manchas, de cerca y con buena luz. Si sigue saliendo dudoso, consulta a un agrónomo.":
+      "Fotopiqa alternariosispa utaq ranchapa unanchankunachá kanman. Manchayuq huk rapillata, asuykuspa, allin achkiywan fotografiay. Hinallataq iskayrayaptinqa, huk agrónomowan rimay.",
+    "Esta herramienta solo reconoce enfermedades de la papa. Toma la foto de cerca a una hoja de papa, con buena luz, que ocupe casi toda la foto.":
+      "Kay app papapa unquyninkunallatam riqsin. Papa rapita asuykuspa fotografiay, allin achkiywan, rapillataq fotopi kachun.",
+
+    // Formulario de la chacra
+    "Medidas de tu terreno": "Chakraykipa tupuynin",
+    "Medidas de la chacra": "Chakrapa tupuynin",
+    "Área en m²": "Hatun kaynin m²-pi",
+    "Área en metros cuadrados": "Hatun kaynin metro cuadradopi",
+    "Largo × ancho": "Suni × rakta",
+    "Largo en metros": "Suni metropi",
+    "Ancho en metros": "Rakta metropi",
+    "¿Cuántas aplicaciones estás dispuesto a hacer?": "¿Hayka kutitataq hampiyta munanki?",
+    "Aplicaciones": "Hampiykuna",
+    "Añadir una aplicación": "Huk hampiyta yapay",
+    "Quitar una aplicación": "Huk hampiyta qichuy",
+    "¿Cuánto presupuesto tienes?": "¿Hayka qullqiyuqtaq kanki?",
+    "¿Qué tan avanzada parece la enfermedad?": "¿Unquyqa hayka mirarqunñataq?",
+    "Cuando la app detecte rancha o alternariosis en tu foto, aquí verás fotos de ejemplo para elegir qué tan avanzada está la enfermedad.":
+      "App fotoykipi ranchata utaq alternariosista tariptinqa, kaypim rikunki rikchanakunata, unquy hayka mirarqusqanta akllanaykipaq.",
+    "Poco": "Pisilla",
+    "Regular": "Chawpi",
+    "Mucho": "Achka",
+    "Unas pocas manchas en 1 o 2 hojas": "1 utaq 2 rapipi pisi manchakuna",
+    "Varias hojas con manchas": "Achka rapi manchayuq",
+    "Casi toda la planta manchada o seca": "Yaqa llapan yura manchasqa utaq chakisqa",
+    "¿Hace cuánto plantaste?": "¿Haykaqñataq tarpurqanki?",
+    "¿Cuánto falta para cosechar?": "¿Hayka pachataq pallanaykipaq faltan?",
+    "Unidad de tiempo": "Pachapa tupuynin",
+    "días": "punchaw",
+    "semanas": "semana",
+    "meses": "killa",
+    "¿De cuántos litros es tu mochila fumigadora?": "¿Fumiganayki mochilayki hayka litrotataq chaskin?",
+    "Capacidad de la mochila en litros": "Mochilapa chaskisqan litropi",
+    "litros": "litro",
+    "¿Dónde plantaste tus plantas?": "¿Maypitaq tarpurqanki?",
+    "Departamento": "Departamento",
+    "Provincia": "Provincia",
+    "Distrito": "Distrito",
+    "¿Qué productos ya usaste?": "¿Ima hampikunatañataq churarqanki?",
+    "Buscar producto que ya usaste": "Churasqayki hampita maskay",
+    "Opcional": "Munaspaqa",
+    "Ver productos recomendados": "Allin hampikunata qaway",
+    "Primero sube una foto de la hoja.": "Ñawpaqta rapipa fotonta churay.",
+    "Solo hay productos recomendados cuando la foto muestra rancha, alternariosis o una hoja sana. Toma otra foto de cerca a una hoja.":
+      "Allin hampikunaqa kanmi fotopi rancha, alternariosis utaq qali rapi rikuriptinlla. Huk rapita asuykuspa huktawan fotografiay.",
+
+    // Sección 2: productos y calculadora
+    "Volver": "Kutiy",
+    "Productos recomendados": "Allin hampikuna",
+    "Mejor opción": "Aswan allin",
+    "No recomendado": "Manam allinchu",
+    "Calcular dosis →": "Dosista yupay →",
+    "Productos": "Hampikuna",
+    "Tu mochila": "Mochilayki",
+    "Capacidad del tanque": "Tanquepa chaskisqan",
+    "Dosis": "Dosis",
+    "Según qué tan fuerte es el ataque": "Unquy hayka sinchi kasqanman hina",
+    "Baja": "Pisi",
+    "Media": "Chawpi",
+    "Alta": "Achka",
+    "Precio": "Chanin",
+    "Precio por envase en soles": "Sapa envasepa chaninin solespi",
+    "S/": "S/",
+    "aprox.": "yaqa",
+    "Escribe las medidas de tu chacra.": "Chakraykipa tupuyninta qillqay.",
+    "Escribe el área de tu chacra y la capacidad de tu mochila para ver el resultado.":
+      "Chakraykipa hatun kayninta, mochilaykipa chaskisqantawan qillqay, tarisqata rikunaykipaq.",
+    "Ficha técnica": "Ficha técnica (kastillanupi)",
+    "Hoja de seguridad": "Hoja de seguridad (kastillanupi)",
+    "Ponte guantes, mascarilla, lentes y botas.": "Guantesta, mascarillata, lentesta, botastawan churakuy.",
+    "Llena la mochila hasta la mitad con agua limpia.": "Mochilata chawpikama chuya yakuwan huntachiy.",
+    "Pesa": "Llasay",
+    "Mide": "Tupuy",
+    "de producto con una jeringa o vaso medidor.": "hampita jeringawan utaq tupunapaq vasowan.",
+    "de producto en una balanza y disuélvelo en un balde con un poco de agua.": "hampita balanzapi, hinaspa baldepi pisi yakuwan chulluchiy.",
+    "de producto": "hampita",
+    "en una balanza": "balanzapi",
+    "con una jeringa o vaso medidor": "jeringawan utaq tupunapaq vasowan",
+    "y disuélvelo en un balde con un poco de agua": "hinaspa baldepi pisi yakuwan chulluchiy",
+    "Échalo a la mochila, completa con agua hasta": "Mochilaman hichay, yakuwan huntachiy",
+    "y agita bien.": "kama, hinaspa allinta kuyuchiy.",
+    "Para tus": "Kay",
+    "necesitas": "chakrapaqmi munanki",
+    "en cada aplicación.": "sapa hampiypi.",
+    "Aplica temprano o al atardecer, sin viento ni lluvia.": "Tutamanta utaq chisiyaykuyta hampiy, mana wayrayuqta nitaq parayuqta.",
+    "Según el pronóstico, el mejor momento para la primera aplicación es": "Pacha willakuyman hina, ñawpaq hampinapaq aswan allin pachaqa",
+    "Cuánto producto usar": "Hayka hampita churanapaq",
+    "En cada mochila": "Sapa mochilapi",
+    "En cada aplicación": "Sapa hampiypi",
+    "Qué comprar": "Ima rantinapaq",
+    "Precio por envase": "Sapa envasepa chaninin",
+    "Costo total": "Llapan chaninin",
+    "Cosecha": "Pallay",
+    "Tu chacra mide": "Chakraykiqa tupun",
+    "Con tu fecha de cosecha ya no deberías aplicar este producto.": "Pallanayki punchawman hinaqa manañam kay hampita churanaykichu.",
+
+    // Motivos de la recomendación
+    "Ya lo usaste en esta campaña: alterna con otro tipo de producto para que la enfermedad no se vuelva resistente.":
+      "Kay campañapi churarqankiñam: huk laya hampiwan tikray, unquy mana hampita atipanampaq.",
+    "Es más fuerte de lo que necesitas": "Munasqaykimanta aswan sinchim",
+    "Es un producto fuerte: con poco avance basta uno más suave y barato": "Sinchi hampim: pisi unquypaqqa huk llampu, pisi chaniyuq hampiwan aypanmi",
+    "Puede quedarse corto para tu nivel de enfermedad": "Unquyniykipaqqa pisichá kanman",
+    "Es para ataques leves: tu cultivo necesita algo más fuerte": "Pisi unquypaqmi: tarpuyniykiqa aswan sinchita munan",
+    "Úsalo con cuidado: tus plantas aún son jóvenes": "Cuidakuspa churay: yurakunayki wawallaraqmi",
+    "Suave para plantas jóvenes": "Wawa yurakunapaq llampum",
+    "Solo previene: no cura lo que ya está infectado": "Harkakullanmi: unqusqataqa manam hampinchu",
+    "Previene y cura": "Harkan, hampintaqmi",
+    "Previene bien y es suficiente con poco avance o poco riesgo": "Allintam harkan, pisi unquypaq utaq pisi riesgopaq aypanmi",
+    "Resiste la lluvia pronosticada para estos días": "Kay punchawkunapi hamuq parata aguantanmi",
+    "La lluvia de estos días puede lavarlo": "Kay punchawkunapa paranqa mayllaruntachá",
+    "Es de nivel leve, justo para el riesgo de tu zona": "Pisi nivelniyuqmi, llaqtaykipa riesgonpaq allin",
+    "Es de nivel medio, justo para el riesgo de tu zona": "Chawpi nivelniyuqmi, llaqtaykipa riesgonpaq allin",
+    "Es de nivel grave, justo para el riesgo de tu zona": "Sinchi nivelniyuqmi, llaqtaykipa riesgonpaq allin",
+    "Es de nivel leve, justo para el avance de tu enfermedad": "Pisi nivelniyuqmi, unquyniykipa mirasqanpaq allin",
+    "Es de nivel medio, justo para el avance de tu enfermedad": "Chawpi nivelniyuqmi, unquyniykipa mirasqanpaq allin",
+    "Es de nivel grave, justo para el avance de tu enfermedad": "Sinchi nivelniyuqmi, unquyniykipa mirasqanpaq allin",
+    "Su etiqueta en papa es para la rancha; contra la alternariosis solo previene":
+      "Papapaq etiquetanqa ranchapaqmi; alternariosispaqqa harkakullanmi",
+    "Su etiqueta en papa es para la rancha; contra la alternariosis solo protege por el mancozeb que contiene":
+      "Papapaq etiquetanqa ranchapaqmi; alternariosispaqqa mancozebninwanlla harkan",
+    "Su etiqueta en papa es para la alternariosis; contra la rancha solo protege antes de que entre":
+      "Papapaq etiquetanqa alternariosispaqmi; ranchapaqqa manaraq yaykuchkaptinlla harkan",
+
+    // ¿Cuándo fumigar?
+    "¿Cuándo fumigar?": "¿Haykaptaq fumiganapaq?",
+    "Mejor momento": "Aswan allin pacha",
+    "Sin buen momento en 3 días": "3 punchawpi mana allin pacha kanchu",
+    "Revisa el clima más adelante": "Qipaman pachata qawamuy",
+    "Buen momento": "Allin pacha",
+    "Con cuidado": "Cuidakuspa",
+    "No fumigar": "Ama fumigaychu",
+    "Buen momento:": "Allin pacha:",
+    "Con cuidado:": "Cuidakuspa:",
+    "No fumigar:": "Ama fumigaychu:",
+    "Toca una hora para ver el detalle": "Huk horata ñitiy, allinta rikunaykipaq",
+    "Viento": "Wayra",
+    "Temperatura": "Rupay-chiri",
+    "Humedad": "Hukuyay",
+    "Lluvia": "Para",
+    "probabilidad": "kanmanchá",
+    "Rocío / inversión": "Sulla / inversión",
+    "Hojas mojadas": "Rapi hukuchasqa",
+    "Hojas secas": "Rapi chaki",
+    "muy seco": "nisyu chaki",
+    "Escribe tu departamento, provincia y distrito en la primera sección para ver el mejor momento según el clima.":
+      "Ñawpaq partepi departamentoykita, provinciaykita, distritoykitawan qillqay, pachaman hina aswan allin pachata rikunaykipaq.",
+    "No pudimos consultar el clima.": "Manam pachata tapuyta atirqanchikchu.",
+    "No encontramos ese lugar. Revisa el departamento, la provincia y el distrito.":
+      "Manam chay llaqtata tarirqanchikchu. Departamentota, provinciata, distritotawan qawapay.",
+    "El pronóstico del clima no está disponible por ahora.": "Pacha willakuyqa kunanqa manam kanchu.",
+    "Pocas horas de humedad alta": "Pisi horallam achka hukuyay",
+    "alto": "achka", "medio": "chawpi", "bajo": "pisi",
+    // Cielo (Google)
+    "Sol": "Inti", "Soleado": "Intiyuq", "Despejado": "Chuya hanaqpacha",
+    "Mayormente soleado": "Aswanqa intiyuq", "Parcialmente soleado": "Wakinpi intiyuq",
+    "Parcialmente nublado": "Wakinpi puyuyuq", "Mayormente nublado": "Aswanqa puyuyuq", "Nublado": "Puyuyuq",
+    "Llovizna": "Para chirapa", "Lluvia ligera": "Pisi para", "Lluvia fuerte": "Sinchi para", "Chubascos": "Para",
+    "Tormentas eléctricas dispersas": "Wakin-wakinpi illapa", "Tormenta eléctrica": "Illapa", "Niebla": "Puyu",
+    "Viento fuerte": "Sinchi wayra", "Nieve": "Rasu", "Granizo": "Chikchi",
+
+    // Enfermedades (sección 3)
+    "Enfermedades de la papa": "Papapa unquyninkuna",
+    "Cómo reconocerlas y qué hacer.": "Imaynata riqsinapaq, imatataq ruranapaq.",
+    "Cómo se ve": "Imaynam rikchakun",
+    "Cuándo aparece": "Haykaptaq rikurin",
+    "Qué hacer": "Imata ruranapaq",
+    "Manchas marrones con anillos como una diana, rodeadas de un borde amarillo. Empiezan en las hojas de abajo y suben.":
+      "Chumpi manchakuna, muyu-muyu anilloyuq, qillu patayuq. Uray rapikunapi qallarin, hinaspa wichayman siqan.",
+    "Días cálidos (24-29 °C) con lluvias o rocío, alternados con días secos. Plantas débiles o con poco nitrógeno.":
+      "Rupay punchawkuna (24-29 °C) parayuq utaq sullayuq, chaki punchawkunawan tikranakuspa. Pisi kallpayuq yurakuna utaq pisi nitrógenoyuq.",
+    "Saca y quema las hojas y restos de plantas enfermas.": "Unqusqa rapikunata, yura puchukunatapas hurquy, hinaspa kañay.",
+    "Rota el cultivo: no siembres papa, tomate ni ají en el mismo lugar por 2 o 3 años.":
+      "Tarpuyta tikray: 2 utaq 3 watakama ama papata, tomateta nitaq uchuta chay kikin chakrapi tarpuychu.",
+    "Abona de forma equilibrada, sobre todo con nitrógeno y potasio.": "Allinta wanuy, astawanqa nitrógenowan potasiowan.",
+    "Riega temprano en la mañana, no al atardecer.": "Tutamanta qarpay, ama chisiyaykuytachu.",
+    "Usa semilla certificada y variedades tolerantes.": "Certificasqa muhuta, unquyta aguantaq papakunata tarpuy.",
+    "Manchas verde oscuro a negras, de aspecto aceitoso, que crecen rápido. Con humedad sale un moho blanco por debajo de la hoja. Puede acabar con la chacra en pocos días.":
+      "Yana-qumir manchakuna, wira hina rikchakuq, utqaylla mirarquq. Hukuyaypiqa rapipa uranpi yuraq ismu lluqsimun. Pisi punchawllapim chakrata tukurunman.",
+    "Frío (10-20 °C), lluvias, neblina o rocío por muchas horas.": "Chiri (10-20 °C), para, puyu utaq sulla achka horakama.",
+    "Actúa de inmediato: es la enfermedad más dañina de la papa.": "Utqaylla ruray: papapa aswan millay unquyninmi.",
+    "Saca las plantas muy afectadas y no dejes montones de papa descartada cerca.":
+      "Nisyu unqusqa yurakunata hurquy, amataq wischusqa papakunata qaylapi saqiychu.",
+    "Aporca bien para proteger los tubérculos.": "Allinta hallmay, papakuna harkasqa kanampaq.",
+    "Mejora el drenaje para que no se empoce el agua.": "Yaku lluqsinanta allichay, yaku mana qutuchakunampaq.",
+    "Alterna productos de distinto tipo para que la rancha no se haga resistente.":
+      "Huk laya hampikunawan tikray, rancha mana hampita atipanampaq.",
+    "No se ven señales de tizón temprano ni de rancha.": "Manam alternariosispa nitaq ranchapa unanchankuna rikukunchu.",
+    "Revisa la chacra una vez por semana.": "Sapa semana chakrata qawamuy.",
+    "En época de lluvias y frío, aplica un producto preventivo como el mancozeb.": "Para-chiri pachapi, mancozeb hina harkaq hampita churay.",
+    "Mantén un buen abonamiento y buen drenaje.": "Allin wanuyta, yaku allin lluqsinantawan waqaychay.",
+
+    // Avance (descripciones con fotos)
+    "Pocas manchas marrones pequeñas, con anillos como una diana, solo en las hojas de abajo (las más viejas).":
+      "Pisi uchuy chumpi manchakuna, muyu-muyu anilloyuq, uray rapikunallapi (machu rapikunapi).",
+    "Manchas en varias hojas de abajo y del medio de la planta, con la hoja amarilla alrededor.":
+      "Yurapa uranpi chawpinpi achka rapikunapi manchakuna, muyuriqninpi qillu rapi.",
+    "Manchas en casi todas las hojas, también las de arriba. Las hojas se ponen amarillas, se secan y caen.":
+      "Yaqa llapan rapikunapi manchakuna, hanaq rapikunapipas. Rapikuna qilluyan, chakirun, urmarunmi.",
+    "Una o pocas manchas verde oscuro, como mojadas, en la punta o el borde de algunas hojas.":
+      "Huk utaq pisi yana-qumir manchakuna, hukuchasqa hina, wakin rapipa puntanpi utaq patanpi.",
+    "Manchas marrón oscuro a negras en varias hojas y tallos. Con humedad sale un moho blanco por debajo de la hoja.":
+      "Yana-chumpi manchakuna achka rapikunapi, tullukunapipas. Hukuyaypiqa rapipa uranpi yuraq ismu lluqsimun.",
+    "Plantas negras o secas, tallos manchados y olor fuerte a planta podrida. Puede acabar con la chacra en pocos días.":
+      "Yana utaq chakisqa yurakuna, manchasqa tullukuna, ismusqa yura hina sinchi asnaq. Pisi punchawllapim chakrata tukurunman.",
+
+    // Modo de uso de cada producto
+    "Fungicida preventivo: aplícalo antes de que aparezca la enfermedad, cubriendo bien las hojas.":
+      "Harkaq fungicidam: manaraq unquy rikurichkaptin churay, rapikunata allinta pampaspa.",
+    "Agita el envase antes de usarlo.": "Manaraq churachkaspa envaseta kuyuchiy.",
+    "Prepara primero una pasta con poca agua y no guardes la mezcla de un día para otro.":
+      "Ñawpaqta pisi yakuwan huk pastata ruray, amataq chaqrusqata paqarinpaq waqaychaychu.",
+    "Rota con productos de otro tipo.": "Huk laya hampikunawan tikray.",
+    "No lo mezcles con productos a base de cobre ni con aguas muy alcalinas o ácidas.":
+      "Ama cobreyuq hampikunawan nitaq nisyu alcalino utaq ácido yakuwan chaqruychu.",
+    "Aplícalo al ver los primeros síntomas o cuando el clima favorezca la rancha.":
+      "Ñawpaq unanchakunata rikuspa utaq pacha ranchapaq allin kaptin churay.",
+    "Aplícalo al inicio de la enfermedad.": "Unquy qallariyta churay.",
+    "Aplícalo de forma preventiva o con los primeros síntomas.": "Harkakunapaq utaq ñawpaq unanchakunawan churay.",
+    "Aplícalo de forma preventiva o en los primeros síntomas, con gotas finas y buena cobertura.":
+      "Harkakunapaq utaq ñawpaq unanchakunapi churay, ñañu sutuchkunawan, allinta pampaspa.",
+    "Usa la dosis alta en zonas donde la rancha es frecuente.": "Rancha sapa kuti kaq llaqtakunapi hatun dosista churay.",
+    "Aplícalo cuando el clima favorezca la enfermedad o con los primeros síntomas.":
+      "Pacha unquypaq allin kaptin utaq ñawpaq unanchakunawan churay.",
+    "Aplícalo con lluvias y humedad alta o al ver los primeros síntomas, cubriendo bien el follaje.":
+      "Para, achka hukuyay kaptin utaq ñawpaq unanchakunata rikuspa churay, rapikunata allinta pampaspa.",
+    "Aplícalo con los primeros síntomas.": "Ñawpaq unanchakunawan churay.",
+    "Diluye primero la dosis en un balde con agua y luego échala al cilindro.": "Ñawpaqta dosista baldepi yakuwan chulluchiy, hinaspa cilindroman hichay.",
+    "No subas la dosis.": "Ama dosista yapaychu.",
+    "La etiqueta indica 500 g por cilindro de 200 L.": "Etiquetaqa ninmi 500 g sapa 200 L cilindropaq.",
+    "Una sola aplicación por campaña en papa.": "Papapiqa sapa campañapi huk kutillam.",
+    "Úsalo cuando la alternariosis ya avanzó y alterna con productos de otro tipo.":
+      "Alternariosis mirarqaptinña churay, huk laya hampikunawantaq tikray.",
+    "Máximo una aplicación por campaña.": "Sapa campañapi huk kutillam.",
+    "Llena el cilindro hasta un tercio con agua limpia, agrega la dosis y completa con agua.":
+      "Cilindrota kimsa partemanta huk partekama chuya yakuwan huntachiy, dosista yapay, hinaspa yakuwan huntachiy.",
+    "Es preventivo de contacto: aplícalo temprano en la mañana o por la tarde, cubriendo bien las hojas.":
+      "Llapchaspa harkaq hampim: tutamanta utaq chisiyaykuyta churay, rapikunata allinta pampaspa.",
+    "Aplícalo con los primeros síntomas, temprano en la mañana, y alterna con un preventivo.":
+      "Ñawpaq unanchakunawan, tutamanta churay, harkaq hampiwantaq tikray.",
+    "Fungicida preventivo": "Harkaq fungicida",
+    "Preventivo (de contacto)": "Harkaq (llapchaspa)",
+  },
+
+  // Textos con números u otras partes que cambian. Se prueban en orden; la primera que coincide gana.
+  PATRONES: [
+    // Fechas: hoy / mañana (los nombres de días y meses se dejan en castellano, como se dicen en la chacra)
+    [`^hoy (.+)$`, "kunan $1"], [`^Hoy (.+)$`, "Kunan $1"],
+    [`^mañana (.+)$`, "paqarin $1"], [`^Mañana (.+)$`, "Paqarin $1"],
+    [`^(.+), de ${HORA} a ${HORA}$`, "$1, $2-manta $3-kama"],
+    [`^(.+) de ${HORA} a ${HORA}$`, "$1, $2-manta $3-kama"],
+    [`^${HORA} · (Buen momento|Con cuidado|No fumigar)(:.*)?$`, (m, h, e, r) => `${h} · ${traducirQU(e)}${r ? ": " + traducirQU(r.slice(2)) : ""}`],
+
+    // Sección 1
+    [`^Envase de (.+) ·$`, "Envase $1 ·"],
+    [`^${N} envases? de (.+)$`, "$1 envase, sapanka $2"],
+    [`^por envase de (.+)$`, "sapa envase $1-paq"],
+    [`^Máx\\. ${N} por cosecha$`, "Sapa pallaypaq $1-kama"],
+    [`^En ${N} aplicaciones$`, "$1 hampiypi"], [`^En ${N} aplicación$`, "$1 hampiypi"],
+    [`^${N} aplicaciones$`, "$1 hampiy"], [`^${N} aplicación$`, "$1 hampiy"],
+    [`^Aplicación ${N}$`, "$1 ñiqin hampiy"],
+    [`^Calendario · cada ${N} días$`, "Hampinapaq punchawkuna · sapa $1 punchaw"],
+    [`^${N} mochilas llenas$`, "$1 mochila huntasqa"], [`^${N} mochila llena$`, "$1 mochila huntasqa"],
+    [`^${N} mochilas? llenas? y 1 más con ${N} L de agua y ${N} (\\S+) de producto$`,
+      "$1 mochila huntasqa, hinaspa huk mochila $2 L yakuwan $3 $4 hampiwan"],
+    [`^1 mochila con solo ${N} L de agua y ${N} (\\S+) de producto$`, "1 mochila $1 L yakullawan $2 $3 hampiwan"],
+    [`^Prepara tu mochila de ${N} L$`, "$1 L mochilaykita allichay"],
+    [`^Con tu presupuesto de (S/ [\\d.,]+) te sobran$`, "$1 qullqiykiwanqa puchunmi"],
+    [`^Tu presupuesto es (S/ [\\d.,]+): te faltan$`, "Qullqiykiqa $1: pisinmi"],
+    [`^Te alcanza: cuesta (S/ [\\d.,]+) y tu presupuesto es (S/ [\\d.,]+)$`, "Aypasunkim: $1 chaniyuq, qullqiykiqa $2"],
+    [`^Cuesta (S/ [\\d.,]+): supera tu presupuesto de (S/ [\\d.,]+)$`, "$1 chaniyuq: $2 qullqiykitam yallin"],
+    [`^Solo se puede aplicar ${N} veces por cosecha$`, "Sapa pallaypaq $1 kutillam churakunman"],
+    [`^Solo se puede aplicar ${N} vez por cosecha$`, "Sapa pallaypaq $1 kutillam churakunman"],
+    [`^Este producto se puede usar como máximo ${N} (?:veces|vez) por cosecha\\.$`,
+      "Kay hampiqa sapa pallaypaq $1 kutikamallam churakunman."],
+    [`^Debes dejar de aplicar ${N} días antes de cosechar\\.(.*)$`,
+      (m, d, r) => `Manaraq pallachkaspa ${d} punchaw ñawpaqtaña hampiyta saqinayki.${r ? " " + traducirQU(r.trim()) : ""}`],
+    [`^Con tu fecha de cosecha solo puedes hacer ${N} (?:aplicación|aplicaciones)\\.$`, "Pallanayki punchawman hinaqa $1 kutillam hampinkiman."],
+    [`^Tus plantas tienen ${N} días: si aún no tienen hojas, espera a que midan ${N} a ${N} cm$`,
+      "Yurakunaykiqa $1 punchawniyuqmi: manaraq rapiyuq kaptinqa, $2-$3 cm kanankama suyay"],
+    [`^Es muy fuerte para plantas de ${N} días: en la etapa inicial usa un producto leve o medio\\.$`,
+      "$1 punchawniyuq yurakunapaqqa nisyu sinchim: qallariypiqa pisi utaq chawpi hampita churay."],
+    [`^Hay que esperar ${N} días entre la última aplicación y la cosecha, y tú cosechas en ${N} días\\.$`,
+      "Qipa hampiymanta pallaykama $1 punchawmi suyakunan, qamqa $2 punchawpim pallanki."],
+    [`^Tiene un ingrediente del mismo grupo que (.+), que ya usaste: alterna para evitar resistencia\\.$`,
+      "$1 hampiwan kikin grupo ingredienteyuqmi, chaytaqa churarqankiñam: tikray, unquy mana atipanampaq."],
+    [`^Cura infecciones recientes: lo necesitas porque (.+)$`, (m, r) => `Musuq unquykunata hampinmi: ${traducirQU(r)} kaptinmi munanki`],
+    [`^la enfermedad está muy avanzada$`, "unquy nisyuta mirarqun"],
+    [`^ya hay varias hojas con manchas$`, "achka rapikunañam manchayuq"],
+    [`^el clima de tu zona favorece la (rancha|alternariosis)$`, "llaqtaykipa pachan $1-paq allin"],
+    [`^Ejemplo de (rancha|alternariosis) con avance (poco|regular|mucho)$`,
+      (m, e, a) => `${e} ${({ poco: "pisilla", regular: "chawpi", mucho: "achka" })[a]} mirasqanpa rikchanan`],
+    [`^Tu chacra mide ${N} m²$`, "Chakraykiqa $1 m² tupun"],
+    [`^Protege más días por aplicación \\(cada ${N} días\\)$`, "Sapa hampiypi aswan achka punchawta harkan (sapa $1 punchaw)"],
+    [`^Una sola aplicación protege unos ${N} días\\. Si siguen las lluvias, vas a necesitar otra\\.$`,
+      "Huk kutilla hampiyqa yaqa $1 punchawtam harkan. Para qatillaptinqa, huktawanmi hampinayki kanqa."],
+
+    // Clima
+    [`^Pronóstico de los próximos ${N} días para (.+)$`, "$2-paq hamuq $1 punchawpa pacha willakuynin"],
+    [`^Consultando el clima de (.+)…$`, "$1-pa pachanta tapuchkan…"],
+    [`^Riesgo de (rancha|alternariosis) en tu zona:$`, "Llaqtaykipi $1-pa riesgon:"],
+    [`^· ${N} horas? seguidas? de humedad alta con temperatura templada$`, "· $1 hora qatinakuspa achka hukuyay, chawpi rupaywan"],
+    [`^${N} horas? seguidas? de humedad alta con temperatura templada$`, "$1 hora qatinakuspa achka hukuyay, chawpi rupaywan"],
+    [`^· Índice de severidad ${N} en ${N} días \\(hojas mojadas con calor\\)$`, "· $2 punchawpi sinchi kaynin $1 (rapikuna hukuchasqa, quñi pachapi)"],
+    [`^ráfagas ${N} km/h(?: · (.+))?$`, (m, v, d) => `wayra tuqyay ${v} km/h${d ? " · " + traducirQU(d) : ""}`],
+    [`^rocío a ${N} °C$`, "sulla $1 °C-pi"],
+    [`^probabilidad · tormenta ${N} %$`, "kanmanchá · illapa $1 %"],
+    [`^(posible inversión|sin inversión) · nubes ${N} %$`, (m, i, n) => `${i === "sin inversión" ? "mana inversiónniyuq" : "inversiónchá"} · puyu ${n} %`],
+    [`^(norte|sur|este|oeste|noreste|noroeste|sureste|suroeste|norte-noreste|este-noreste|este-sureste|sur-sureste|sur-suroeste|oeste-suroeste|oeste-noroeste|norte-noroeste)$`,
+      (m, d) => d.replace(/norte/g, "chinchay").replace(/sur/g, "qulla").replace(/este/g, "inti lluqsimuy").replace(/oeste/g, "inti haykuy")],
+    [`^viento suave \\(${N} km/h\\), sin lluvia en las próximas ${N} h, ${N} °C y humedad de ${N} %\\. El producto cae sobre las hojas, no se evapora y tiene tiempo de secarse\\.$`,
+      "llampu wayra ($1 km/h), hamuq $2 horapi mana parayuq, $3 °C, $4 % hukuyaywan. Hampiqa rapikunaman urmaykun, mana wapsiyanchu, chakinanpaqpas pachayuqmi."],
+    [`^se puede fumigar, pero ten en cuenta lo siguiente\\.(.*)$`, (m, r) => `fumigakunmanmi, ichaqa kayta yuyaykuy.${r ? " " + traducirQU(r.trim()) : ""}`],
+    // Motivos (vienen del servidor)
+    [`^Viento fuerte \\(${N} km/h\\): el producto se va con el viento y cae fuera de la chacra$`, "Sinchi wayra ($1 km/h): hampitaqa wayram apan, chakramanta hawaman urman"],
+    [`^Ráfagas fuertes \\(${N} km/h\\): el producto se va con el viento y cae fuera de la chacra$`, "Sinchi wayra tuqyay ($1 km/h): hampitaqa wayram apan, chakramanta hawaman urman"],
+    [`^Viento moderado \\(${N} km/h\\): parte del producto puede desviarse; fumiga a favor del viento y cerca de las plantas$`,
+      "Chawpi wayra ($1 km/h): hampipa wakinmi wakmanchá rinman; wayrapa rinanman hina, yurakunaman asuykuspa fumigay"],
+    [`^Viento moderado \\(${N} km/h\\): parte del producto puede desviarse$`, "Chawpi wayra ($1 km/h): hampipa wakinmi wakmanchá rinman"],
+    [`^fumiga a favor del viento y cerca de las plantas$`, "wayrapa rinanman hina, yurakunaman asuykuspa fumigay"],
+    [`^Mucho calor \\(${N} °C\\): las gotas se evaporan antes de llegar a la hoja y la planta puede quemarse$`,
+      "Nisyu rupay ($1 °C): sutuchkunaqa manaraq rapita aypachkaspa wapsiyanmi, yurapas ruparunmanmi"],
+    [`^Calor \\(${N} °C\\): parte del producto se evapora; mejor temprano o al atardecer$`, "Rupay ($1 °C): hampipa wakinmi wapsiyan; aswan allin tutamanta utaq chisiyaykuyta"],
+    [`^Calor \\(${N} °C\\): parte del producto se evapora$`, "Rupay ($1 °C): hampipa wakinmi wapsiyan"],
+    [`^mejor temprano o al atardecer$`, "aswan allin tutamanta utaq chisiyaykuyta"],
+    [`^Mucho frío \\(${N} °C\\): la planta absorbe menos el producto$`, "Nisyu chiri ($1 °C): yuraqa hampita pisillatam chunqan"],
+    [`^Aire muy seco \\(${N} %\\): las gotas se evaporan antes de llegar a la hoja$`, "Nisyu chaki wayra ($1 %): sutuchkunaqa manaraq rapita aypachkaspa wapsiyanmi"],
+    [`^Aire algo seco \\(${N} %\\): parte de las gotas se evapora$`, "Wayra chakiraq ($1 %): wakin sutuchkunam wapsiyan"],
+    [`^Humedad muy alta \\(${N} %\\): la hoja húmeda tarda en secar y el producto puede escurrirse$`,
+      "Nisyu hukuyay ($1 %): hukuchasqa rapiqa unaytam chakin, hampipas sururunmanmi"],
+    [`^Lluvia probable en las próximas ${N} h \\(${N} %\\): lavaría el producto antes de que se seque$`,
+      "Hamuq $1 horapi parachá ($2 %): manaraq chakichkaptin hampita mayllarunman"],
+    [`^Posible tormenta eléctrica: es peligroso estar en el campo y la lluvia lavaría el producto$`,
+      "Illapachá kanman: chakrapi kayqa peligrom, paraqa hampita mayllarunman"],
+    [`^Puede llover \\(${N} %\\): si llueve antes de ${N} h, el producto se lava$`, "Parankumanchá ($1 %): $2 hora manaraq pasachkaptin paraptinqa, hampiqa mayllakunmi"],
+    [`^Puede haber tormenta en las próximas ${N} h: la lluvia lavaría el producto$`, "Hamuq $1 horapi illapachá kanman: paraqa hampita mayllarunman"],
+    [`^Hojas mojadas por rocío: el producto se diluye y escurre de la hoja$`, "Rapi sullawan hukuchasqa: hampiqa chulluspa rapipi mana takyanchu"],
+    [`^Posible inversión térmica \\(cielo despejado y sin viento\\): el producto queda flotando en el aire y no baja a las hojas$`,
+      "Inversión térmicachá (chuya hanaqpacha, mana wayrayuq): hampiqa wayrapim tuytuchkan, manam rapikunaman urmanchu"],
+    [`^Casi sin viento \\(${N} km/h\\): las gotas más finas pueden quedarse flotando; usa gotas más gruesas$`,
+      "Yaqa mana wayrayuq ($1 km/h): ñañu sutuchkunaqa tuytunmanmi; aswan raku sutuchkunawan fumigay"],
+    [`^Casi sin viento \\(${N} km/h\\): las gotas más finas pueden quedarse flotando$`, "Yaqa mana wayrayuq ($1 km/h): ñañu sutuchkunaqa tuytunmanmi"],
+    [`^usa gotas más gruesas$`, "aswan raku sutuchkunawan fumigay"],
+    [`^Es de noche: no se ve bien dónde cae el producto y suele haber rocío y aire quieto$`,
+      "Tutam: manam allintachu rikukun maymanchus hampi urman, sullapas, mana kuyuq wayrapas kanmi"],
+    [`^Es de noche$`, "Tutam"],
+
+    // Modo de uso con números
+    [`^Agita el envase antes de usarlo\\. Aplícalo al inicio de los síntomas; máximo ${N} aplicaciones por campaña dentro de un manejo integrado\\.$`,
+      "Manaraq churachkaspa envaseta kuyuchiy. Unanchakuna qallariyta churay; sapa campañapi $1 kutikama, manejo integradowan."],
+    [`^Aplícalo al inicio de los síntomas; máximo ${N} aplicaciones por campaña dentro de un manejo integrado\\.$`,
+      "Unanchakuna qallariyta churay; sapa campañapi $1 kutikama, manejo integradowan."],
+    [`^Aplícalo al aparecer los primeros síntomas, máximo ${N} aplicaciones seguidas cada ${N} a ${N} días\\.$`,
+      "Ñawpaq unanchakuna rikuriptin churay, $1 kutikama qatinakuspa, sapa $2-$3 punchaw."],
+    [`^Máximo ${N} aplicaciones si haces una campaña al año, o ${N} si haces dos\\.$`, "Watapi huk campañata ruraspaqa $1 kutikama, iskayta ruraspaqa $2 kutikama."],
+    [`^No lo repitas más de ${N} veces seguidas\\.$`, "Ama $1 kutimanta aswanta qatinakuspa churaychu."],
+    [`^Máximo ${N} aplicaciones por campaña\\.$`, "Sapa campañapi $1 kutikama."],
+    [`^Máximo ${N} por campaña\\.$`, "Sapa campañapi $1 kutikama."],
+    [`^Aplícalo de forma preventiva o con los primeros síntomas, cada ${N} a ${N} días; si ya hay síntomas o el ataque es fuerte, cada ${N} a ${N} días\\.$`,
+      "Harkakunapaq utaq ñawpaq unanchakunawan churay, sapa $1-$2 punchaw; unanchakuna kaptinña utaq unquy sinchi kaptinqa, sapa $3-$4 punchaw."],
+    [`^La etiqueta indica ${N} g por cilindro de ${N} L\\.$`, "Etiquetaqa ninmi $1 g sapa $2 L cilindropaq."],
+    [`^La ficha indica ${N} L por cilindro de ${N} L\\.$`, "Fichaqa ninmi $1 L sapa $2 L cilindropaq."],
+    [`^Empieza cuando la planta mida ${N} a ${N} cm; usa la dosis baja al principio y súbela conforme crezca\\.$`,
+      "Yura $1-$2 cm kaptin qallariy; qallariypiqa pisi dosista churay, wiñasqanman hina yapaspa."],
+    [`^Empieza cuando las plantas midan ${N} a ${N} cm o antes de los primeros síntomas, y repite cada ${N} a ${N} días\\.$`,
+      "Yurakuna $1-$2 cm kaptin utaq manaraq unanchakuna rikurichkaptin qallariy, sapa $3-$4 punchawtaq kutipay."],
+    [`^Se puede aplicar en cualquier etapa del cultivo, desde los primeros síntomas, cada ${N} a ${N} días\\.$`,
+      "Tarpuypa mayqan pachanpipas churakunmanmi, ñawpaq unanchakunamanta, sapa $1-$2 punchaw."],
+    [`^Preventivo: cada ${N} a ${N} días\\.$`, "Harkakunapaq: sapa $1-$2 punchaw."],
+    [`^Con síntomas: la segunda a los ${N} a ${N} días y luego cada ${N} a ${N}\\.$`, "Unanchakunawan: iskay ñiqintaqa $1-$2 punchawmanta, chaymantaqa sapa $3-$4."],
+    [`^Usa ${N} L/ha con los primeros síntomas y ${N} L/ha con mucha enfermedad\\.$`, "Ñawpaq unanchakunawanqa $1 L/ha churay, achka unquywantaq $2 L/ha."],
+    [`^Aplícalo antes de las lluvias: previene, no cura\\.$`, "Manaraq parachkaptin churay: harkanmi, manam hampinchu."],
+  ],
+};

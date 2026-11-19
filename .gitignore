@@ -14,3 +14,18 @@ models/clases.json
 # Archivos de prueba temporales
 frontend/_prueba*
 .DS_Store
+
+# Salidas de Kaggle, respaldos de modelos y fotos de prueba (pesados; no se suben)
+results/
+results (*)/
+models_v1/
+models_v2/
+fotos/
+3fotosalternariosis/
+3fotosrancha/
+prueba_estres.csv
+.~lock*
+
+# Documentos de la feria (no se publican)
+*.docx
+PapaQhawaq_detalle_del_proyecto.txt

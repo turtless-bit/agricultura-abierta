@@ -59,6 +59,61 @@
           "productos": [
             "mancozeb"
           ]
+        },
+        "no_detectado": {
+          "nombre": "No se detectó alternariosis ni rancha",
+          "agente": "—",
+          "sintomas": "La foto no muestra señales de alternariosis ni de rancha. La hoja puede estar sana o tener otro problema (otra enfermedad, plaga o falta de nutrientes) que esta herramienta todavía no reconoce.",
+          "condiciones": "—",
+          "manejo_cultural": [
+            "Si la hoja tiene manchas, toma otra foto de cerca y con buena luz, o consulta a un ingeniero agrónomo.",
+            "Continuar con el monitoreo semanal del cultivo.",
+            "En épocas de lluvia y frío, considerar aplicaciones preventivas con un protectante (ej. mancozeb)."
+          ],
+          "productos": [
+            "mancozeb"
+          ]
+        },
+        "otro_problema": {
+          "nombre": "La hoja tiene un problema que la app no reconoce",
+          "agente": "—",
+          "sintomas": "La hoja no parece sana, pero tampoco tiene señales de alternariosis ni de rancha. Puede ser otra enfermedad, una plaga, falta de nutrientes o daño por heladas o por productos químicos.",
+          "condiciones": "—",
+          "manejo_cultural": [
+            "Consulta a un ingeniero agrónomo antes de aplicar productos.",
+            "Toma otra foto de cerca y con buena luz para confirmar.",
+            "Revisa si otras plantas de la chacra tienen el mismo problema."
+          ],
+          "productos": [
+            "mancozeb"
+          ]
+        },
+        "dudoso": {
+          "nombre": "Resultado dudoso",
+          "agente": "—",
+          "sintomas": "La foto tiene señales que podrían ser alternariosis o rancha y el modelo no puede decidir entre las dos.",
+          "condiciones": "—",
+          "manejo_cultural": [
+            "Toma otra foto de una sola hoja con manchas, de cerca, con buena luz y sin sombra.",
+            "Revisa el envés de la hoja: un moho blanco con humedad indica rancha.",
+            "Si sigue saliendo dudoso, consulta a un ingeniero agrónomo antes de aplicar productos."
+          ],
+          "productos": [
+            "mancozeb"
+          ]
+        },
+        "no_es_papa": {
+          "nombre": "No parece una hoja de papa",
+          "agente": "—",
+          "sintomas": "La foto no parece de una hoja o planta de papa. Esta herramienta solo reconoce enfermedades de la papa.",
+          "condiciones": "—",
+          "manejo_cultural": [
+            "Toma la foto de cerca a una hoja de papa, con buena luz y sin sombra.",
+            "Que la hoja ocupe casi toda la foto."
+          ],
+          "productos": [
+            "mancozeb"
+          ]
         }
       }
     }

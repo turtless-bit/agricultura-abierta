@@ -66,7 +66,7 @@ def disponible() -> bool:
 
 def _get(url: str, params: dict) -> dict:
     q = urllib.parse.urlencode(params, doseq=True)
-    req = urllib.request.Request(f"{url}?{q}", headers={"User-Agent": "AgriculturaAbierta/0.1"})
+    req = urllib.request.Request(f"{url}?{q}", headers={"User-Agent": "PapaQhawaq/0.1"})
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
             return json.loads(r.read().decode("utf-8"))
@@ -176,52 +176,52 @@ def evaluar(horas: list[dict]) -> list[dict]:
         v, g = f["viento"], f["rafaga"]
         if v is not None:
             if v > U["viento_max"]:
-                no.append(f"Viento fuerte ({v:.0f} km/h): el producto se va con el viento")
+                no.append(f"Viento fuerte ({v:.0f} km/h): el producto se va con el viento y cae fuera de la chacra")
             elif g is not None and g > U["rafaga_max"]:
-                no.append(f"Ráfagas fuertes ({g:.0f} km/h): el producto se va con el viento")
+                no.append(f"Ráfagas fuertes ({g:.0f} km/h): el producto se va con el viento y cae fuera de la chacra")
             elif v > U["viento_ideal_max"]:
-                aviso.append(f"Viento moderado ({v:.0f} km/h)")
+                aviso.append(f"Viento moderado ({v:.0f} km/h): parte del producto puede desviarse; fumiga a favor del viento y cerca de las plantas")
         # 2. Temperatura
         t = f["temp"]
         if t is not None:
             if t > U["temp_max"]:
-                no.append(f"Mucho calor ({t:.0f} °C)")
+                no.append(f"Mucho calor ({t:.0f} °C): las gotas se evaporan antes de llegar a la hoja y la planta puede quemarse")
             elif t > U["temp_ideal_max"]:
-                aviso.append(f"Calor ({t:.0f} °C)")
+                aviso.append(f"Calor ({t:.0f} °C): parte del producto se evapora; mejor temprano o al atardecer")
             elif t < U["temp_min"]:
-                aviso.append(f"Mucho frío ({t:.0f} °C)")
+                aviso.append(f"Mucho frío ({t:.0f} °C): la planta absorbe menos el producto")
         # 3. Humedad
         hr = f["hr"]
         if hr is not None:
             if hr < U["hr_min"]:
-                no.append(f"Aire muy seco ({hr:.0f} %): las gotas se evaporan")
+                no.append(f"Aire muy seco ({hr:.0f} %): las gotas se evaporan antes de llegar a la hoja")
             elif hr < U["hr_ideal_min"]:
-                aviso.append(f"Aire algo seco ({hr:.0f} %)")
+                aviso.append(f"Aire algo seco ({hr:.0f} %): parte de las gotas se evapora")
             elif hr > U["hr_max"]:
-                aviso.append(f"Humedad muy alta ({hr:.0f} %)")
+                aviso.append(f"Humedad muy alta ({hr:.0f} %): la hoja húmeda tarda en secar y el producto puede escurrirse")
         # 4. Lluvia (esta hora y las de secado) y rocío
         siguientes = filas[i:i + 1 + U["horas_secado"]]
         prob = max((x["lluvia_prob"] or 0) for x in siguientes)
         mm = sum((x["lluvia_mm"] or 0) for x in siguientes)
         if prob >= U["lluvia_prob_max"] or mm > U["lluvia_mm_max"]:
-            no.append(f"Lluvia probable en las próximas {U['horas_secado']} h ({prob:.0f} %): lavaría el producto")
+            no.append(f"Lluvia probable en las próximas {U['horas_secado']} h ({prob:.0f} %): lavaría el producto antes de que se seque")
         elif max((x["tormenta"] or 0) for x in filas[i:i + 2]) >= U["tormenta_max"]:
-            no.append("Posible tormenta eléctrica")
+            no.append("Posible tormenta eléctrica: es peligroso estar en el campo y la lluvia lavaría el producto")
         elif prob >= U["lluvia_prob_aviso"]:
-            aviso.append(f"Puede llover ({prob:.0f} %)")
+            aviso.append(f"Puede llover ({prob:.0f} %): si llueve antes de {U['horas_secado']} h, el producto se lava")
         elif max((x["tormenta"] or 0) for x in siguientes) >= U["tormenta_aviso"]:
-            aviso.append(f"Puede haber tormenta en las próximas {U['horas_secado']} h")
+            aviso.append(f"Puede haber tormenta en las próximas {U['horas_secado']} h: la lluvia lavaría el producto")
         if t is not None and f["rocio"] is not None and t - f["rocio"] <= U["rocio_delta"]:
-            aviso.append("Hojas mojadas por rocío")
+            aviso.append("Hojas mojadas por rocío: el producto se diluye y escurre de la hoja")
         # 5. Inversión térmica (estimada)
         temprano = 5 <= f["hora"].hour <= 8
         if (f["nubes"] is not None and f["nubes"] < U["nubes_inversion"]
                 and v is not None and v < U["viento_min"] and (not f["dia"] or temprano)):
-            no.append("Posible inversión térmica (cielo despejado y sin viento): el producto queda flotando")
+            no.append("Posible inversión térmica (cielo despejado y sin viento): el producto queda flotando en el aire y no baja a las hojas")
         elif v is not None and v < U["viento_min"]:
-            aviso.append(f"Casi sin viento ({v:.0f} km/h)")
+            aviso.append(f"Casi sin viento ({v:.0f} km/h): las gotas más finas pueden quedarse flotando; usa gotas más gruesas")
         if not f["dia"]:
-            no.append("Es de noche")
+            no.append("Es de noche: no se ve bien dónde cae el producto y suele haber rocío y aire quieto")
 
         estado = "no" if no else ("aviso" if aviso else "ok")
         resultado.append({
@@ -235,8 +235,9 @@ def evaluar(horas: list[dict]) -> list[dict]:
     return resultado
 
 
-def ventanas(horas: list[dict], minimo: int = 2) -> list[dict]:
-    """Bloques de horas seguidas aptas ('ok') de al menos `minimo` horas."""
+def ventanas(horas: list[dict], minimo: int = 1) -> list[dict]:
+    """Bloques de horas seguidas aptas ('ok') de al menos `minimo` horas.
+    Una sola hora buena también cuenta: así coincide con las horas en verde del calendario."""
     res, actual = [], []
     for h in horas + [{"estado": "fin"}]:
         if h["estado"] == "ok" and (not actual or actual[-1]["fecha"] == h["fecha"]):

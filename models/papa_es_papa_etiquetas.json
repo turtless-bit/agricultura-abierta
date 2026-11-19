@@ -1,0 +1,7 @@
+{
+ "0": "No es papa (otro cultivo u objeto)",
+ "1": "Hoja o planta de papa",
+ "img_size": 224,
+ "umbral": 0.63,
+ "nota": "salida sigmoid = probabilidad de la clase 1; entrada RGB 0-255; negativos: otros cultivos, fotos inválidas y fotos generales"
+}

@@ -1,0 +1,7 @@
+{
+ "0": "Hoja enferma (alternariosis, lancha u otra enfermedad)",
+ "1": "Hoja de papa sana",
+ "img_size": 224,
+ "umbral": 0.85,
+ "nota": "salida sigmoid = probabilidad de la clase 1; entrada RGB 0-255; ajuste fino v4 con fotos de campo; negativos: hojas de papa con alternariosis, lancha u otras enfermedades; umbral bajado de 0.95 (validación de campo) a 0.85 para la app: solo se consulta si no hay rancha ni alternariosis"
+}

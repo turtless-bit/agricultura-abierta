@@ -1,0 +1,14 @@
+.git
+.venv
+.env
+__pycache__
+*.pyc
+datos
+rancha
+frontend/anterior
+frontend/_prueba*
+models/*.keras
+README.md
+results
+models_v1
+models_v2

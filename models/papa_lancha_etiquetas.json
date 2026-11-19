@@ -1,0 +1,7 @@
+{
+ "0": "No lancha (sana u otra enfermedad)",
+ "1": "Lancha / Tizón tardío (Phytophthora infestans)",
+ "img_size": 224,
+ "umbral": 0.78,
+ "nota": "salida sigmoid = probabilidad de la clase 1; entrada RGB 0-255; ajuste fino v4 con fotos de campo; negativos de entrenamiento incluyen hojas sanas Y otras enfermedades"
+}

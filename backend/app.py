@@ -1,28 +1,32 @@
-"""Servidor de AgroSano: diagnóstico de enfermedades y calculadora de aplicaciones.
+"""Servidor de PapaQhawaq: diagnóstico de enfermedades y calculadora de aplicaciones.
 
 Ejecutar:  .venv/bin/uvicorn backend.app:app --reload
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
 import logging
 
 from . import clima
 from .calculadora import UNIDADES_AREA, calcular
-from .modelo import Detector
+from .modelo import CARPETA_MODELOS, Detector
 
 RAIZ = Path(__file__).resolve().parent.parent
 CATALOGO = json.loads((Path(__file__).parent / "data" / "catalogo.json").read_text(encoding="utf-8"))
 MAX_BYTES = 10 * 1024 * 1024
 
-app = FastAPI(title="AgroSano", version="0.1.0")
+app = FastAPI(title="PapaQhawaq", version="0.1.0")
+app.add_middleware(GZipMiddleware, minimum_size=1000)  # el motor de IA (.wasm) baja de 11 a 3 MB
 detector = Detector()
 
 
@@ -63,7 +67,7 @@ async def diagnosticar(foto: UploadFile = File(...), cultivo: str = "papa"):
     if len(datos) > MAX_BYTES:
         raise HTTPException(413, "La imagen supera los 10 MB.")
     try:
-        res = detector.predecir(datos)
+        res = await run_in_threadpool(detector.predecir, datos)  # no bloquea a otros usuarios
     except Exception:
         raise HTTPException(400, "No se pudo leer la imagen.")
     enf = _enfermedad(cultivo, res["clase"])
@@ -109,6 +113,37 @@ def api_clima(departamento: str = "", provincia: str = "", distrito: str = ""):
 
 app.mount("/static", StaticFiles(directory=RAIZ / "frontend"), name="static")
 app.mount("/imagenes", StaticFiles(directory=RAIZ / "imagenes"), name="imagenes")
+
+
+# Modelos para la IA en el navegador: solo los .tflite y sus etiquetas
+MODELOS_WEB = ("papa_es_papa", "papa_alternariosis", "papa_lancha", "papa_sana")
+
+
+@app.get("/modelos/{archivo}")
+def modelo_web(archivo: str):
+    permitidos = {f"{n}{ext}" for n in MODELOS_WEB for ext in (".tflite", "_etiquetas.json")}
+    if archivo not in permitidos or not (CARPETA_MODELOS / archivo).exists():
+        raise HTTPException(404, "Modelo no encontrado")
+    return FileResponse(CARPETA_MODELOS / archivo, headers={"Cache-Control": "no-cache"})
+
+
+def _version_app() -> str:
+    """Huella de la página y de los modelos: si algo cambia, el celular descarga la versión nueva."""
+    h = hashlib.sha256()
+    archivos = [RAIZ / "frontend" / "index.html", RAIZ / "frontend" / "sw.js", RAIZ / "frontend" / "qu.js"]
+    archivos += sorted(CARPETA_MODELOS.glob("papa_*")) + sorted((RAIZ / "frontend" / "vendor").rglob("*"))
+    for a in archivos:
+        if a.is_file():
+            st = a.stat()
+            h.update(f"{a.name}:{st.st_size}:{st.st_mtime_ns}".encode())
+    return h.hexdigest()[:12]
+
+
+@app.get("/sw.js")
+def service_worker():
+    # En la raíz para que pueda controlar toda la página (modo sin internet)
+    js = (RAIZ / "frontend" / "sw.js").read_text(encoding="utf-8").replace("__VERSION__", _version_app())
+    return Response(js, media_type="application/javascript", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/")
